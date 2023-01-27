@@ -20,6 +20,16 @@ def mouse_pos_to_board_idx(mi: int, mj: int) -> tuple[bool, int, int]:
         return False, i, j
 
 
+# 작동 순서
+# 1. Janggi 클래스 생성
+# 2. 반복문을 돌며 마우스 이벤트 체크
+# 3. 왼쪽 마우스 버튼이 눌러졌을 경우 mouse_pos_to_board_idx 함수로 마우스 클릭 위치가 유효한지 검사
+# 4-1. 만약 유효하지 않다면 pass
+# 4-2. 마우스 클릭 위치가 유효하고 이전에 선택된 장기말이 없는 경우(처음 장기말을 선택) 선택한 장기말이 움직일 수 있는 위치를
+#      janggi.calc_movable_values 함수로 계산
+# 4-3. 마우스 클릭 위치가 유효하고 이전에 선택된 장기말이 있는 경우 janggi.put_piece 함수를 이용해 마우스 클릭 위치로 이동
+# 5. 외통수가 나거나 프로그램 종료 버튼을 누르면 종료
+
 pygame.init()
 janggi = Game()
 is_piece_clicked = False
@@ -82,6 +92,7 @@ while janggi.get_running():
             #         else:
             #             print(piece.get_piece_type(), end='  ')
             #     print()
+
 pygame.quit()
 
 # 추가 구현해야 하는 것들

@@ -6,10 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="05fdc0bd-0858-41a5-af32-6faf2dbaf38f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/header/Janggi.py" beforeDir="false" afterPath="$PROJECT_DIR$/header/Janggi.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/header/JanggiPiece.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/header/JanggiTeam.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/header/janggi_const.py" beforeDir="false" afterPath="$PROJECT_DIR$/header/janggi_const.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/header/Janggi.py" beforeDir="false" afterPath="$PROJECT_DIR$/Janggi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/header/janggi_const.py" beforeDir="false" afterPath="$PROJECT_DIR$/janggi_const.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -45,6 +43,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\qjatj\OneDrive\문서\GitHub\Janggi-with-python" />
       <recent name="C:\Users\qjatj\OneDrive\문서\Janggi\header" />
     </key>
   </component>

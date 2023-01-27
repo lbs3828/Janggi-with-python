@@ -324,6 +324,7 @@ class Game:
         return False
 
     def is_legal_move(self, src_piece: Piece, move_value: tuple[int, int]):
+        # 수를 놓았을 때 자신이 장군 상태가 된다면 그 수는 불법(?)적인 수
         src_pos = src_piece.get_pos()
         dst_pos = (src_pos[0] + move_value[0], src_pos[1] + move_value[1])
         dst_piece = self._board[dst_pos[1]][dst_pos[0]]
@@ -339,6 +340,7 @@ class Game:
             return True
 
     def calc_movable_values(self, src_piece: Piece) -> list[tuple[int, int]]:
+        # src_piece가 이동할 수 있는 위치를 계산
         src_piece_type = src_piece.get_piece_type()
         src_piece_team_type = src_piece.get_team_type()
         src_i, src_j = src_piece.get_pos()
@@ -516,6 +518,7 @@ class Game:
         return movable_values
 
     def put_piece(self, src_piece: Piece, dst_pos: tuple[int, int]):
+        # 장기말을 dst_pos 위치로 이동
         dst_piece = self._board[dst_pos[1]][dst_pos[0]]
 
         src_piece.set_pos(dst_pos)
@@ -525,6 +528,7 @@ class Game:
         self._init_board()
 
     def restore_put_piece(self, src_piece: Piece, dst_piece, restore_pos: tuple[int, int]):
+        # 장기말을 이동시켰던 것을 다시 원상복구 시키는 함수
         src_piece.set_pos(restore_pos)
         if dst_piece != 0:
             dst_piece.set_alive(True)
@@ -532,6 +536,8 @@ class Game:
         self._init_board()
 
     def is_possible_to_attack(self, src_piece: Piece, dst_piece: Piece) -> bool:
+        # src_piece가 dst_piece를 공격 가능한지 검사
+        # 거의 대부분 적의 왕을 타격할 수 있는지 검사할 때 이 함수를 사용
         src_piece_type = src_piece.get_piece_type()
         src_piece_team = src_piece.get_team_type()
         dst_piece_team = dst_piece.get_team_type()
@@ -629,6 +635,7 @@ class Game:
                 return False
 
     def is_enemy_checked(self, ally_team_type: str) -> bool:
+        # 적이 장군 상태인지 검사
         ally_pieces = self.get_team(ally_team_type).get_pieces()
         enemy_team_type = ally_team_type % 2 + 1
         enemy_king_piece = self.get_team(enemy_team_type).get_king_piece()
@@ -642,6 +649,7 @@ class Game:
         return False
 
     def is_enemy_checkmate(self, ally_team_type: str) -> bool:
+        # 적이 외통수 상태인지 검사
         enemy_team_type = ally_team_type % 2 + 1
         enemy_pieces = self.get_team(enemy_team_type).get_pieces()
 
@@ -748,6 +756,7 @@ class Game:
 
 
 def is_pos_in_fortress(pos: tuple[int, int]) -> bool:
+    # pos가 궁성 안에 있는지 검사
     if not ((3 <= pos[0] <= 5) and ((7 <= pos[1] <= 9) or (0 <= pos[1] <= 2))):
         return False
     else:
@@ -755,6 +764,7 @@ def is_pos_in_fortress(pos: tuple[int, int]) -> bool:
 
 
 def is_pos_in_board(pos: tuple[int, int]) -> bool:
+    # pos가 장기판 안에 있는지 검사
     if not ((0 <= pos[0] <= 8) and (0 <= pos[1] <= 9)):
         return False
     else:
