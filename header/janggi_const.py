@@ -1,13 +1,13 @@
 # 장기판 및 장기말 크기 상수
-JANGGI_BOARD_WIDTH = 45          # 장기판 가로 : 45cm
-JANGGI_BOARD_HEIGHT = 42         # 장기판 세로 : 42cm
+JANGGI_BOARD_WIDTH = 45         # 장기판 가로 : 45cm
+JANGGI_BOARD_HEIGHT = 42        # 장기판 세로 : 42cm
 CELL_WIDTH = 4.7                # 장기판 가로 한칸 : 4.7cm
 CELL_HEIGHT = 4                 # 장기판 세로 한칸 : 4cm
 WHITE_SPACE_WIDTH = 3.7         # 장기판 가로 여백 : 3.7cm
 WHITE_SPACE_HEIGHT = 3          # 장기판 세로 여백 : 3cm
-JANGGI_KING_PIECE_SIZE = 3.7     # 궁(將)크기 : 3.7cm
-JANGGI_BIG_PIECE_SIZE = 3        # 대기물(大棋物)크기 : 3cm
-JANGGI_SMALL_PIECE_SIZE = 2.3    # 소기물(小棋物)크기 : 2.3cm
+JANGGI_KING_PIECE_SIZE = 3.7    # 궁(將)크기 : 3.7cm
+JANGGI_BIG_PIECE_SIZE = 3       # 대기물(大棋物)크기 : 3cm
+JANGGI_SMALL_PIECE_SIZE = 2.3   # 소기물(小棋物)크기 : 2.3cm
 
 # 색 상수
 BACKGROUND_COLOR = (244, 176, 93)   # 장기판 배경색

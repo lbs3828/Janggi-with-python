@@ -21,7 +21,7 @@ def mouse_pos_to_board_idx(mi: int, mj: int) -> tuple[bool, int, int]:
 
 
 pygame.init()
-janggi = Janggi()
+janggi = Game()
 is_piece_clicked = False
 
 janggi.show_board()
@@ -40,7 +40,7 @@ while janggi.get_running():
                 janggi.show_board()
             elif not is_piece_clicked:
                 src_piece = janggi.get_piece_from_board((i, j))
-                if src_piece != 0:
+                if isinstance(src_piece, Piece):
                     if src_piece.get_team_type() == janggi.get_turn():
                         is_piece_clicked = True
                         movable_values = janggi.calc_movable_values(src_piece)
@@ -53,7 +53,8 @@ while janggi.get_running():
                         else:
                             print("한나라 차례입니다.")
             else:
-                if (i - src_piece.get_i(), j - src_piece.get_j()) in movable_values:
+                src_pos = src_piece.get_pos()
+                if (i - src_pos[0], j - src_pos[1]) in movable_values:
                     janggi.put_piece(src_piece, (i, j))
 
                     if janggi.is_enemy_checked(janggi.get_turn()):
@@ -67,7 +68,6 @@ while janggi.get_running():
                                         break
                             break
                         else:
-                            janggi.get_team(janggi.get_next_turn()).set_checked(True)
                             print("장군!")
                     janggi.set_turn_to_next()
 
