@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="05fdc0bd-0858-41a5-af32-6faf2dbaf38f" name="Changes" comment="01/54" />
+    <list default="true" id="05fdc0bd-0858-41a5-af32-6faf2dbaf38f" name="Changes" comment="01/54">
+      <change afterPath="$PROJECT_DIR$/play_with_AI_main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Janggi.py" beforeDir="false" afterPath="$PROJECT_DIR$/Janggi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/janggi_const.py" beforeDir="false" afterPath="$PROJECT_DIR$/janggi_const.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

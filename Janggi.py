@@ -4,13 +4,34 @@ from pygame.locals import Rect
 
 
 class Piece:
-    def __init__(self, piece_type: str, team_type: str, pos: tuple[int, int], piece_size: int, img_path: str):
+    def __init__(self, piece_type: str, team_type: int, pos: tuple[int, int], img_path: str):
         self._piece_type = piece_type
         self._team_type = team_type
         self._pos = pos
+        self._alive = True
+
+        if piece_type == KING:
+            self._score = 1.5 if team_type == RED_TEAM else 0
+        elif piece_type == ROOK:
+            self._score = 13
+        elif piece_type == CANNON:
+            self._score = 7
+        elif piece_type == KNIGHT:
+            self._score = 5
+        elif piece_type == ELEPHANT or piece_type == GUARD:
+            self._score = 3
+        else:
+            self._score = 2
+
+        if piece_type == KING:
+            piece_size = JANGGI_KING_PIECE_SIZE
+        elif piece_type == GUARD or piece_type == PAWN:
+            piece_size = JANGGI_SMALL_PIECE_SIZE
+        else:
+            piece_size = JANGGI_BIG_PIECE_SIZE
+
         self._img = pygame.transform.scale(pygame.image.load(img_path), (piece_size * MAGNIFICATION_RATIO,
                                                                          piece_size * MAGNIFICATION_RATIO))
-        self._alive = True
 
     def get_piece_type(self) -> str:
         return self._piece_type
@@ -33,51 +54,48 @@ class Piece:
     def set_alive(self, alive: bool):
         self._alive = alive
 
+    def get_score(self) -> int:
+        return self._score
+
 
 class Team:
-    def __init__(self, team_type: str):
+    def __init__(self, team_type: int):
         self._team_type = team_type
         self._pieces = []
         self._init_pieces()
 
     def _init_pieces(self):
         if self._team_type == RED_TEAM:
-            for i in range(5):
-                self._pieces.append(Piece(PAWN, RED_TEAM, (2 * i, 3),
-                                          JANGGI_SMALL_PIECE_SIZE, RED_PAWN_IMG_PATH))
-            for i in range(2):
-                self._pieces.append(Piece(ROOK, RED_TEAM, (i * 8, 0),
-                                          JANGGI_BIG_PIECE_SIZE, RED_ROOK_IMG_PATH))
-                self._pieces.append(Piece(KNIGHT, RED_TEAM, (i * 6 + 1, 0),
-                                          JANGGI_BIG_PIECE_SIZE, RED_KNIGHT_IMG_PATH))
-                self._pieces.append(Piece(ELEPHANT, RED_TEAM, (i * 4 + 2, 0),
-                                          JANGGI_BIG_PIECE_SIZE, RED_ELEPHANT_IMG_PATH))
-                self._pieces.append(Piece(GUARD, RED_TEAM, (i * 2 + 3, 0),
-                                          JANGGI_SMALL_PIECE_SIZE, RED_GUARD_IMG_PATH))
-                self._pieces.append(Piece(CANNON, RED_TEAM, (i * 6 + 1, 2),
-                                          JANGGI_BIG_PIECE_SIZE, RED_CANNON_IMG_PATH))
-            self._pieces.append(Piece(KING, RED_TEAM, (4, 1),
-                                      JANGGI_KING_PIECE_SIZE, RED_KING_IMG_PATH))
+            # for i in range(5):
+            #     self._pieces.append(Piece(PAWN, RED_TEAM, (2 * i, 3), RED_PAWN_IMG_PATH))
+            # for i in range(2):
+            #     self._pieces.append(Piece(ROOK, RED_TEAM, (i * 8, 0), RED_ROOK_IMG_PATH))
+            #     self._pieces.append(Piece(CANNON, RED_TEAM, (i * 6 + 1, 2), RED_CANNON_IMG_PATH))
+            #     self._pieces.append(Piece(KNIGHT, RED_TEAM, (i * 6 + 1, 0), RED_KNIGHT_IMG_PATH))
+            #     self._pieces.append(Piece(ELEPHANT, RED_TEAM, (i * 4 + 2, 0), RED_ELEPHANT_IMG_PATH))
+            #     self._pieces.append(Piece(GUARD, RED_TEAM, (i * 2 + 3, 0), RED_GUARD_IMG_PATH))
+            self._pieces.append(Piece(KING, RED_TEAM, (4, 1), RED_KING_IMG_PATH))
         else:
             for i in range(5):
-                self._pieces.append(Piece(PAWN, BLUE_TEAM, (2 * i, 6),
-                                          JANGGI_SMALL_PIECE_SIZE, BLUE_PAWN_IMG_PATH))
+                self._pieces.append(Piece(PAWN, BLUE_TEAM, (2 * i, 6), BLUE_PAWN_IMG_PATH))
             for i in range(2):
-                self._pieces.append(Piece(ROOK, BLUE_TEAM, (i * 8, 9),
-                                          JANGGI_BIG_PIECE_SIZE, BLUE_ROOK_IMG_PATH))
-                self._pieces.append(Piece(KNIGHT, BLUE_TEAM, (i * 6 + 1, 9),
-                                          JANGGI_BIG_PIECE_SIZE, BLUE_KNIGHT_IMG_PATH))
-                self._pieces.append(Piece(ELEPHANT, BLUE_TEAM, (i * 4 + 2, 9),
-                                          JANGGI_BIG_PIECE_SIZE, BLUE_ELEPHANT_IMG_PATH))
-                self._pieces.append(Piece(GUARD, BLUE_TEAM, (i * 2 + 3, 9),
-                                          JANGGI_SMALL_PIECE_SIZE, BLUE_GUARD_IMG_PATH))
-                self._pieces.append(Piece(CANNON, BLUE_TEAM, (i * 6 + 1, 7),
-                                          JANGGI_BIG_PIECE_SIZE, BLUE_CANNON_IMG_PATH))
-            self._pieces.append(Piece(KING, BLUE_TEAM, (4, 8),
-                                      JANGGI_KING_PIECE_SIZE, BLUE_KING_IMG_PATH))
+                self._pieces.append(Piece(ROOK, BLUE_TEAM, (i * 8, 9), BLUE_ROOK_IMG_PATH))
+                self._pieces.append(Piece(CANNON, BLUE_TEAM, (i * 6 + 1, 7), BLUE_CANNON_IMG_PATH))
+                self._pieces.append(Piece(KNIGHT, BLUE_TEAM, (i * 5 + 1, 9), BLUE_KNIGHT_IMG_PATH))
+                self._pieces.append(Piece(ELEPHANT, BLUE_TEAM, (i * 5 + 2, 9), BLUE_ELEPHANT_IMG_PATH))
+                self._pieces.append(Piece(GUARD, BLUE_TEAM, (i * 2 + 3, 9), BLUE_GUARD_IMG_PATH))
+            self._pieces.append(Piece(KING, BLUE_TEAM, (4, 8), BLUE_KING_IMG_PATH))
 
     def get_pieces(self) -> list[Piece]:
         return self._pieces
+
+    def get_total_piece_score(self):
+        total_piece_score = 0
+        for piece in self._pieces:
+            if piece.get_alive():
+                total_piece_score += piece.get_score()
+
+        return total_piece_score
 
     def get_king_piece(self) -> Piece:
         return self._pieces[-1]
@@ -177,6 +195,7 @@ class Game:
         if isinstance(dst_piece, Piece):
             if src_piece.get_team_type() == dst_piece.get_team_type():
                 return False
+
         fortress_center = (4, 1) if 0 <= src_pos[1] <= 2 else (4, 8)
         fortress_center_piece = self._board[fortress_center[1]][fortress_center[0]]
         if fortress_center_piece == 0:
@@ -323,218 +342,6 @@ class Game:
 
         return False
 
-    def is_legal_move(self, src_piece: Piece, move_value: tuple[int, int]):
-        # 수를 놓았을 때 자신이 장군 상태가 된다면 그 수는 불법(?)적인 수
-        src_pos = src_piece.get_pos()
-        dst_pos = (src_pos[0] + move_value[0], src_pos[1] + move_value[1])
-        dst_piece = self._board[dst_pos[1]][dst_pos[0]]
-        enemy_team_type = src_piece.get_team_type() % 2 + 1
-
-        self.put_piece(src_piece, dst_pos)
-        is_ally_checked = self.is_enemy_checked(enemy_team_type)
-        self.restore_put_piece(src_piece, dst_piece, src_pos)
-
-        if is_ally_checked:
-            return False
-        else:
-            return True
-
-    def calc_movable_values(self, src_piece: Piece) -> list[tuple[int, int]]:
-        # src_piece가 이동할 수 있는 위치를 계산
-        src_piece_type = src_piece.get_piece_type()
-        src_piece_team_type = src_piece.get_team_type()
-        src_i, src_j = src_piece.get_pos()
-        movable_values = []
-
-        if src_piece_type == KING or src_piece_type == GUARD:
-            for i in range(-1, 2):
-                for j in range(-1, 2):
-                    if self.is_possible_king_and_guard_move(src_piece, (i, j)) and self.is_legal_move(src_piece, (i, j)):
-                        movable_values.append((i, j))
-        elif src_piece_type == ROOK:
-            for j in range(src_j + 1, 10):
-                if isinstance(self._board[j][src_i], Piece):
-                    if self._board[j][src_i].get_team_type() != src_piece_team_type and \
-                            self.is_legal_move(src_piece, (0, j - src_j)):
-                        movable_values.append((0, j - src_j))
-                    break
-                if self.is_legal_move(src_piece, (0, j - src_j)):
-                    movable_values.append((0, j - src_j))
-            for j in range(src_j - 1, -1, -1):
-                if isinstance(self._board[j][src_i], Piece):
-                    if self._board[j][src_i].get_team_type() != src_piece_team_type and \
-                            self.is_legal_move(src_piece, (0, j - src_j)):
-                        movable_values.append((0, j - src_j))
-                    break
-                if self.is_legal_move(src_piece, (0, j - src_j)):
-                    movable_values.append((0, j - src_j))
-            for i in range(src_i + 1, 9):
-                if isinstance(self._board[src_j][i], Piece):
-                    if self._board[src_j][i].get_team_type() != src_piece_team_type and \
-                            self.is_legal_move(src_piece, (i - src_i, 0)):
-                        movable_values.append((i - src_i, 0))
-                    break
-                if self.is_legal_move(src_piece, (i - src_i, 0)):
-                    movable_values.append((i - src_i, 0))
-            for i in range(src_i - 1, -1, -1):
-                if isinstance(self._board[src_j][i], Piece):
-                    if self._board[src_j][i].get_team_type() != src_piece_team_type and \
-                            self.is_legal_move(src_piece, (i - src_i, 0)):
-                        movable_values.append((i - src_i, 0))
-                    break
-                if self.is_legal_move(src_piece, (i - src_i, 0)):
-                    movable_values.append((i - src_i, 0))
-
-            for i in range(1, 3):
-                for _ in range(2):
-                    i *= -1
-                    j = i
-                    for _ in range(2):
-                        j *= -1
-                        if self.is_possible_diagonal_rook_move(src_piece, (i, j)) and \
-                                self.is_legal_move(src_piece, (i, j)):
-                            movable_values.append((i, j))
-        elif src_piece_type == CANNON:
-            for j in range(src_j + 1, 10):
-                if not isinstance(self._board[j][src_i], Piece):
-                    continue
-                elif self._board[j][src_i].get_piece_type() == CANNON:
-                    break
-                else:
-                    for k in range(j + 1, 10):
-                        if not isinstance(self._board[k][src_i], Piece):
-                            if self.is_legal_move(src_piece, (0, k - src_j)):
-                                movable_values.append((0, k - src_j))
-                        elif self._board[k][src_i].get_team_type() == src_piece_team_type or \
-                                self._board[k][src_i].get_piece_type() == CANNON:
-                            break
-                        else:
-                            if self.is_legal_move(src_piece, (0, k - src_j)):
-                                movable_values.append((0, k - src_j))
-                            break
-            for j in range(src_j - 1, -1, -1):
-                if not isinstance(self._board[j][src_i], Piece):
-                    continue
-                elif self._board[j][src_i].get_piece_type() == CANNON:
-                    break
-                else:
-                    for k in range(j - 1, -1, -1):
-                        if not isinstance(self._board[k][src_i], Piece):
-                            if self.is_legal_move(src_piece, (0, k - src_j)):
-                                movable_values.append((0, k - src_j))
-                        elif self._board[k][src_i].get_team_type() == src_piece_team_type or \
-                                self._board[k][src_i].get_piece_type() == CANNON:
-                            break
-                        else:
-                            if self.is_legal_move(src_piece, (0, k - src_j)):
-                                movable_values.append((0, k - src_j))
-                            break
-            for i in range(src_i + 1, 9):
-                if not isinstance(self._board[src_j][i], Piece):
-                    continue
-                elif self._board[src_j][i].get_piece_type() == CANNON:
-                    break
-                else:
-                    for k in range(i + 1, 9):
-                        if not isinstance(self._board[src_j][k], Piece):
-                            if self.is_legal_move(src_piece, (k - src_i, 0)):
-                                movable_values.append((k - src_i, 0))
-                        elif self._board[src_j][k].get_team_type() == src_piece_team_type or \
-                                self._board[src_j][k].get_piece_type() == CANNON:
-                            break
-                        else:
-                            if self.is_legal_move(src_piece, (k - src_i, 0)):
-                                movable_values.append((k - src_i, 0))
-                            break
-                break
-            for i in range(src_i - 1, -1, -1):
-                if not isinstance(self._board[src_j][i], Piece):
-                    continue
-                elif self._board[src_j][i].get_piece_type() == CANNON:
-                    break
-                else:
-                    for k in range(i - 1, -1, -1):
-                        if self._board[src_j][k] == 0:
-                            if self.is_legal_move(src_piece, (k - src_i, 0)):
-                                movable_values.append((k - src_i, 0))
-                        elif self._board[src_j][k].get_team_type() == src_piece_team_type or \
-                                self._board[src_j][k].get_piece_type() == CANNON:
-                            break
-                        else:
-                            if self.is_legal_move(src_piece, (k - src_i, 0)):
-                                movable_values.append((k - src_i, 0))
-                            break
-                break
-
-            i = 2
-            for _ in range(2):
-                i *= -1
-                j = i
-                for _ in range(2):
-                    j *= -1
-                    if self.is_possible_diagonal_cannon_move(src_piece, (i, j)) and \
-                            self.is_legal_move(src_piece, (i, j)):
-                        movable_values.append((i, j))
-        elif src_piece_type == KNIGHT:
-            if self.is_possible_knight_move(src_piece, (1, 2)) and self.is_legal_move(src_piece, (1, 2)):
-                movable_values.append((1, 2))
-            if self.is_possible_knight_move(src_piece, (1, -2)) and self.is_legal_move(src_piece, (1, -2)):
-                movable_values.append((1, -2))
-            if self.is_possible_knight_move(src_piece, (-1, 2)) and self.is_legal_move(src_piece, (-1, 2)):
-                movable_values.append((-1, 2))
-            if self.is_possible_knight_move(src_piece, (-1, -2)) and self.is_legal_move(src_piece, (-1, -2)):
-                movable_values.append((-1, -2))
-            if self.is_possible_knight_move(src_piece, (2, 1)) and self.is_legal_move(src_piece, (2, 1)):
-                movable_values.append((2, 1))
-            if self.is_possible_knight_move(src_piece, (2, -1)) and self.is_legal_move(src_piece, (2, -1)):
-                movable_values.append((2, -1))
-            if self.is_possible_knight_move(src_piece, (-2, 1)) and self.is_legal_move(src_piece, (-2, 1)):
-                movable_values.append((-2, 1))
-            if self.is_possible_knight_move(src_piece, (-2, -1)) and self.is_legal_move(src_piece, (-2, -1)):
-                movable_values.append((-2, -1))
-        elif src_piece_type == ELEPHANT:
-            if self.is_possible_elephant_move(src_piece, (2, 3)) and self.is_legal_move(src_piece, (2, 3)):
-                movable_values.append((2, 3))
-            if self.is_possible_elephant_move(src_piece, (2, -3)) and self.is_legal_move(src_piece, (2, -3)):
-                movable_values.append((2, -3))
-            if self.is_possible_elephant_move(src_piece, (-2, 3)) and self.is_legal_move(src_piece, (-2, 3)):
-                movable_values.append((-2, 3))
-            if self.is_possible_elephant_move(src_piece, (-2, -3)) and self.is_legal_move(src_piece, (-2, -3)):
-                movable_values.append((-2, -3))
-            if self.is_possible_elephant_move(src_piece, (3, 2)) and self.is_legal_move(src_piece, (3, 2)):
-                movable_values.append((3, 2))
-            if self.is_possible_elephant_move(src_piece, (3, -2)) and self.is_legal_move(src_piece, (3, -2)):
-                movable_values.append((3, -2))
-            if self.is_possible_elephant_move(src_piece, (-3, 2)) and self.is_legal_move(src_piece, (-3, 2)):
-                movable_values.append((-3, 2))
-            if self.is_possible_elephant_move(src_piece, (-3, -2)) and self.is_legal_move(src_piece, (-3, -2)):
-                movable_values.append((-3, -2))
-        elif src_piece_type == PAWN:
-            for i in range(-1, 2):
-                for j in range(-1, 2):
-                    if self.is_possible_pawn_move(src_piece, (i, j)) and self.is_legal_move(src_piece, (i, j)):
-                        movable_values.append((i, j))
-
-        return movable_values
-
-    def put_piece(self, src_piece: Piece, dst_pos: tuple[int, int]):
-        # 장기말을 dst_pos 위치로 이동
-        dst_piece = self._board[dst_pos[1]][dst_pos[0]]
-
-        src_piece.set_pos(dst_pos)
-        if isinstance(dst_piece, Piece):
-            dst_piece.set_alive(False)
-
-        self._init_board()
-
-    def restore_put_piece(self, src_piece: Piece, dst_piece, restore_pos: tuple[int, int]):
-        # 장기말을 이동시켰던 것을 다시 원상복구 시키는 함수
-        src_piece.set_pos(restore_pos)
-        if dst_piece != 0:
-            dst_piece.set_alive(True)
-
-        self._init_board()
-
     def is_possible_to_attack(self, src_piece: Piece, dst_piece: Piece) -> bool:
         # src_piece가 dst_piece를 공격 가능한지 검사
         # 거의 대부분 적의 왕을 타격할 수 있는지 검사할 때 이 함수를 사용
@@ -634,7 +441,7 @@ class Game:
             else:
                 return False
 
-    def is_enemy_checked(self, ally_team_type: str) -> bool:
+    def is_enemy_checked(self, ally_team_type: int) -> bool:
         # 적이 장군 상태인지 검사
         ally_pieces = self.get_team(ally_team_type).get_pieces()
         enemy_team_type = ally_team_type % 2 + 1
@@ -648,7 +455,7 @@ class Game:
 
         return False
 
-    def is_enemy_checkmate(self, ally_team_type: str) -> bool:
+    def is_enemy_checkmate(self, ally_team_type: int) -> bool:
         # 적이 외통수 상태인지 검사
         enemy_team_type = ally_team_type % 2 + 1
         enemy_pieces = self.get_team(enemy_team_type).get_pieces()
@@ -660,6 +467,289 @@ class Game:
                     return False
 
         return True
+
+    def is_legal_move(self, src_piece: Piece, move_value: tuple[int, int]):
+        # 수를 놓았을 때 자신이 장군 상태가 된다면 그 수는 불법(?)적인 수
+        src_pos = src_piece.get_pos()
+        dst_pos = (src_pos[0] + move_value[0], src_pos[1] + move_value[1])
+        dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+        enemy_team_type = src_piece.get_team_type() % 2 + 1
+
+        self.put_piece(src_piece, dst_pos)
+        is_ally_checked = self.is_enemy_checked(enemy_team_type)
+        self.restore_put_piece(src_piece, dst_piece, src_pos)
+
+        if is_ally_checked:
+            return False
+        else:
+            return True
+
+    def calc_movable_values(self, src_piece: Piece) -> list[tuple[int, int]]:
+        # src_piece가 이동할 수 있는 위치를 계산
+        src_piece_type = src_piece.get_piece_type()
+        src_piece_team_type = src_piece.get_team_type()
+        src_i, src_j = src_piece.get_pos()
+        movable_values = []
+
+        if src_piece_type == KING or src_piece_type == GUARD:
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    if self.is_possible_king_and_guard_move(src_piece, (i, j)) and self.is_legal_move(src_piece, (i, j)):
+                        movable_values.append((i, j))
+        elif src_piece_type == ROOK:
+            for j in range(src_j + 1, 10):
+                if isinstance(self._board[j][src_i], Piece):
+                    if self._board[j][src_i].get_team_type() != src_piece_team_type and \
+                            self.is_legal_move(src_piece, (0, j - src_j)):
+                        movable_values.append((0, j - src_j))
+                    break
+                if self.is_legal_move(src_piece, (0, j - src_j)):
+                    movable_values.append((0, j - src_j))
+            for j in range(src_j - 1, -1, -1):
+                if isinstance(self._board[j][src_i], Piece):
+                    if self._board[j][src_i].get_team_type() != src_piece_team_type and \
+                            self.is_legal_move(src_piece, (0, j - src_j)):
+                        movable_values.append((0, j - src_j))
+                    break
+                if self.is_legal_move(src_piece, (0, j - src_j)):
+                    movable_values.append((0, j - src_j))
+            for i in range(src_i + 1, 9):
+                if isinstance(self._board[src_j][i], Piece):
+                    if self._board[src_j][i].get_team_type() != src_piece_team_type and \
+                            self.is_legal_move(src_piece, (i - src_i, 0)):
+                        movable_values.append((i - src_i, 0))
+                    break
+                if self.is_legal_move(src_piece, (i - src_i, 0)):
+                    movable_values.append((i - src_i, 0))
+            for i in range(src_i - 1, -1, -1):
+                if isinstance(self._board[src_j][i], Piece):
+                    if self._board[src_j][i].get_team_type() != src_piece_team_type and \
+                            self.is_legal_move(src_piece, (i - src_i, 0)):
+                        movable_values.append((i - src_i, 0))
+                    break
+                if self.is_legal_move(src_piece, (i - src_i, 0)):
+                    movable_values.append((i - src_i, 0))
+            for i in range(1, 3):
+                for _ in range(2):
+                    i *= -1
+                    j = i
+                    for _ in range(2):
+                        j *= -1
+                        if self.is_possible_diagonal_rook_move(src_piece, (i, j)) and \
+                                self.is_legal_move(src_piece, (i, j)):
+                            movable_values.append((i, j))
+        elif src_piece_type == CANNON:
+            for j in range(src_j + 1, 10):
+                if not isinstance(self._board[j][src_i], Piece):
+                    continue
+                elif self._board[j][src_i].get_piece_type() == CANNON:
+                    break
+                else:
+                    for k in range(j + 1, 10):
+                        if not isinstance(self._board[k][src_i], Piece):
+                            if self.is_legal_move(src_piece, (0, k - src_j)):
+                                movable_values.append((0, k - src_j))
+                        elif self._board[k][src_i].get_team_type() == src_piece_team_type or \
+                                self._board[k][src_i].get_piece_type() == CANNON:
+                            break
+                        else:
+                            if self.is_legal_move(src_piece, (0, k - src_j)):
+                                movable_values.append((0, k - src_j))
+                            break
+                    break
+            for j in range(src_j - 1, -1, -1):
+                if not isinstance(self._board[j][src_i], Piece):
+                    continue
+                elif self._board[j][src_i].get_piece_type() == CANNON:
+                    break
+                else:
+                    for k in range(j - 1, -1, -1):
+                        if not isinstance(self._board[k][src_i], Piece):
+                            if self.is_legal_move(src_piece, (0, k - src_j)):
+                                movable_values.append((0, k - src_j))
+                        elif self._board[k][src_i].get_team_type() == src_piece_team_type or \
+                                self._board[k][src_i].get_piece_type() == CANNON:
+                            break
+                        else:
+                            if self.is_legal_move(src_piece, (0, k - src_j)):
+                                movable_values.append((0, k - src_j))
+                            break
+                    break
+            for i in range(src_i + 1, 9):
+                if not isinstance(self._board[src_j][i], Piece):
+                    continue
+                elif self._board[src_j][i].get_piece_type() == CANNON:
+                    break
+                else:
+                    for k in range(i + 1, 9):
+                        if not isinstance(self._board[src_j][k], Piece):
+                            if self.is_legal_move(src_piece, (k - src_i, 0)):
+                                movable_values.append((k - src_i, 0))
+                        elif self._board[src_j][k].get_team_type() == src_piece_team_type or \
+                                self._board[src_j][k].get_piece_type() == CANNON:
+                            break
+                        else:
+                            if self.is_legal_move(src_piece, (k - src_i, 0)):
+                                movable_values.append((k - src_i, 0))
+                            break
+                    break
+            for i in range(src_i - 1, -1, -1):
+                if not isinstance(self._board[src_j][i], Piece):
+                    continue
+                elif self._board[src_j][i].get_piece_type() == CANNON:
+                    break
+                else:
+                    for k in range(i - 1, -1, -1):
+                        if self._board[src_j][k] == 0:
+                            if self.is_legal_move(src_piece, (k - src_i, 0)):
+                                movable_values.append((k - src_i, 0))
+                        elif self._board[src_j][k].get_team_type() == src_piece_team_type or \
+                                self._board[src_j][k].get_piece_type() == CANNON:
+                            break
+                        else:
+                            if self.is_legal_move(src_piece, (k - src_i, 0)):
+                                movable_values.append((k - src_i, 0))
+                            break
+                    break
+            i = 2
+            for _ in range(2):
+                i *= -1
+                j = i
+                for _ in range(2):
+                    j *= -1
+                    if self.is_possible_diagonal_cannon_move(src_piece, (i, j)) and \
+                            self.is_legal_move(src_piece, (i, j)):
+                        movable_values.append((i, j))
+        elif src_piece_type == KNIGHT:
+            # 바보같은 코드 (반복문으로 하면 되는데..)
+            if self.is_possible_knight_move(src_piece, (1, 2)) and self.is_legal_move(src_piece, (1, 2)):
+                movable_values.append((1, 2))
+            if self.is_possible_knight_move(src_piece, (1, -2)) and self.is_legal_move(src_piece, (1, -2)):
+                movable_values.append((1, -2))
+            if self.is_possible_knight_move(src_piece, (-1, 2)) and self.is_legal_move(src_piece, (-1, 2)):
+                movable_values.append((-1, 2))
+            if self.is_possible_knight_move(src_piece, (-1, -2)) and self.is_legal_move(src_piece, (-1, -2)):
+                movable_values.append((-1, -2))
+            if self.is_possible_knight_move(src_piece, (2, 1)) and self.is_legal_move(src_piece, (2, 1)):
+                movable_values.append((2, 1))
+            if self.is_possible_knight_move(src_piece, (2, -1)) and self.is_legal_move(src_piece, (2, -1)):
+                movable_values.append((2, -1))
+            if self.is_possible_knight_move(src_piece, (-2, 1)) and self.is_legal_move(src_piece, (-2, 1)):
+                movable_values.append((-2, 1))
+            if self.is_possible_knight_move(src_piece, (-2, -1)) and self.is_legal_move(src_piece, (-2, -1)):
+                movable_values.append((-2, -1))
+        elif src_piece_type == ELEPHANT:
+            # 바보같은 코드 (반복문으로 하면 되는데..)
+            if self.is_possible_elephant_move(src_piece, (2, 3)) and self.is_legal_move(src_piece, (2, 3)):
+                movable_values.append((2, 3))
+            if self.is_possible_elephant_move(src_piece, (2, -3)) and self.is_legal_move(src_piece, (2, -3)):
+                movable_values.append((2, -3))
+            if self.is_possible_elephant_move(src_piece, (-2, 3)) and self.is_legal_move(src_piece, (-2, 3)):
+                movable_values.append((-2, 3))
+            if self.is_possible_elephant_move(src_piece, (-2, -3)) and self.is_legal_move(src_piece, (-2, -3)):
+                movable_values.append((-2, -3))
+            if self.is_possible_elephant_move(src_piece, (3, 2)) and self.is_legal_move(src_piece, (3, 2)):
+                movable_values.append((3, 2))
+            if self.is_possible_elephant_move(src_piece, (3, -2)) and self.is_legal_move(src_piece, (3, -2)):
+                movable_values.append((3, -2))
+            if self.is_possible_elephant_move(src_piece, (-3, 2)) and self.is_legal_move(src_piece, (-3, 2)):
+                movable_values.append((-3, 2))
+            if self.is_possible_elephant_move(src_piece, (-3, -2)) and self.is_legal_move(src_piece, (-3, -2)):
+                movable_values.append((-3, -2))
+        elif src_piece_type == PAWN:
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    if self.is_possible_pawn_move(src_piece, (i, j)) and self.is_legal_move(src_piece, (i, j)):
+                        movable_values.append((i, j))
+
+        return movable_values
+
+    def put_piece(self, src_piece: Piece, dst_pos: tuple[int, int]):
+        # 장기말을 dst_pos 위치로 이동
+        dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+
+        src_piece.set_pos(dst_pos)
+        if isinstance(dst_piece, Piece):
+            dst_piece.set_alive(False)
+
+        self._init_board()
+
+    def restore_put_piece(self, src_piece: Piece, dst_piece, restore_pos: tuple[int, int]):
+        # 장기말을 이동시켰던 것을 다시 원상복구 시키는 함수
+        src_piece.set_pos(restore_pos)
+        if isinstance(dst_piece, Piece):
+            dst_piece.set_alive(True)
+
+        self._init_board()
+
+    def max(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, int, int]:
+        if depth >= 4:
+            return (self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, 0, 0)
+
+        ally_turn = RED_TEAM
+        enemy_turn = BLUE_TEAM
+        if self.is_enemy_checkmate(enemy_turn):
+            return (-999, None, 0, 0)
+
+        max_performance_value = -99999
+        for piece in self.get_team(ally_turn).get_pieces():
+            if piece.get_alive():
+                for i, j in self.calc_movable_values(piece):
+                    src_pos = piece.get_pos()
+                    dst_pos = (i + src_pos[0], j + src_pos[1])
+                    dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+                    self.put_piece(piece, dst_pos)
+                    performance_value, _, _, _ = self.min(depth + 1, alpha, beta)
+                    if performance_value > max_performance_value:
+                        max_performance_value = performance_value
+                        max_piece = piece
+                        max_i, max_j = i, j
+                    self.restore_put_piece(piece, dst_piece, src_pos)
+
+                    max_pos = max_piece.get_pos()
+                    if max_performance_value >= beta:
+                        return (max_performance_value, max_piece, max_i + max_pos[0], max_j + max_pos[1])
+
+                    if max_performance_value > alpha:
+                        alpha = max_performance_value
+
+        max_pos = max_piece.get_pos()
+        return (max_performance_value, max_piece, max_i + max_pos[0], max_j + max_pos[1])
+
+    def min(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, int, int]:
+        if depth >= 4:
+            # 인공지능 팀이 바뀌면 수정해야 됨
+            return (self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, 0, 0)
+
+        ally_turn = BLUE_TEAM
+        enemy_turn = RED_TEAM
+        if self.is_enemy_checkmate(enemy_turn):
+            return (999, None, 0, 0)
+
+        min_performance_value = 99999
+        for piece in self.get_team(ally_turn).get_pieces():
+            if piece.get_alive():
+                for i, j in self.calc_movable_values(piece):
+                    src_pos = piece.get_pos()
+                    dst_pos = (i + src_pos[0], j + src_pos[1])
+                    dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+                    self.put_piece(piece, dst_pos)
+                    performance_value, _, _, _ = self.max(depth + 1, alpha, beta)
+                    if performance_value < min_performance_value:
+                        min_performance_value = performance_value
+                        min_piece = piece
+                        min_i, min_j = i, j
+                    self.restore_put_piece(piece, dst_piece, src_pos)
+
+                    min_pos = min_piece.get_pos()
+                    if min_performance_value <= alpha:
+                        return (min_performance_value, min_piece, min_i + min_pos[0], min_j + min_pos[1])
+
+                    if min_performance_value < beta:
+                        beta = min_performance_value
+
+        min_pos = min_piece.get_pos()
+        return (min_performance_value, min_piece, min_i + min_pos[0], min_j + min_pos[1])
 
     def get_piece_from_board(self, pos: tuple[int, int]):
         return self._board[pos[1]][pos[0]]
@@ -673,7 +763,7 @@ class Game:
     def set_turn_to_next(self):
         self._turn = self._turn % 2 + 1
 
-    def get_team(self, team_type: str) -> Team:
+    def get_team(self, team_type: int) -> Team:
         return self._red_team if team_type == RED_TEAM else self._blue_team
 
     def get_board(self):
@@ -744,6 +834,16 @@ class Game:
         x = (i * CELL_WIDTH + WHITE_SPACE_WIDTH - JANGGI_KING_PIECE_SIZE / 2) * MAGNIFICATION_RATIO
         y = (j * CELL_HEIGHT + WHITE_SPACE_HEIGHT - JANGGI_KING_PIECE_SIZE / 2) * MAGNIFICATION_RATIO
         pygame.draw.rect(self._Surface, (255, 0, 0), Rect(x, y, w, h), 2)
+
+        pygame.display.update()
+
+    def show_ai_move_pos(self, move_pos: tuple[int, int]):
+        i, j = move_pos
+        x = (i * CELL_WIDTH + WHITE_SPACE_WIDTH - JANGGI_KING_PIECE_SIZE / 2) * MAGNIFICATION_RATIO
+        y = (j * CELL_HEIGHT + WHITE_SPACE_HEIGHT - JANGGI_KING_PIECE_SIZE / 2) * MAGNIFICATION_RATIO
+        w = JANGGI_KING_PIECE_SIZE * MAGNIFICATION_RATIO
+        h = JANGGI_KING_PIECE_SIZE * MAGNIFICATION_RATIO
+        pygame.draw.rect(self._Surface, (0, 0, 255), Rect(x, y, w, h), 2)
 
         pygame.display.update()
 

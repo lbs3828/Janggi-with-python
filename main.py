@@ -33,22 +33,26 @@ def mouse_pos_to_board_idx(mi: int, mj: int) -> tuple[bool, int, int]:
 pygame.init()
 janggi = Game()
 is_piece_clicked = False
+is_clicked_quit_button = False
 
 janggi.show_board()
-while janggi.get_running():
+while not is_clicked_quit_button:
     for event in pygame.event.get():
         if event.type == QUIT:
-            janggi.set_running(False)
+            is_clicked_quit_button = True
             break
 
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
+        if janggi.get_running() and event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
             mi, mj = event.pos[0] / MAGNIFICATION_RATIO, event.pos[1] / MAGNIFICATION_RATIO
             is_valid_pos, i, j = mouse_pos_to_board_idx(mi, mj)
             print("마우스 클릭 위치 -" + " i :", str(i) + ", j :", j)
+
             if not is_valid_pos:
+                print(1)
                 is_piece_clicked = False
                 janggi.show_board()
             elif not is_piece_clicked:
+                print(2)
                 src_piece = janggi.get_piece_from_board((i, j))
                 if isinstance(src_piece, Piece):
                     if src_piece.get_team_type() == janggi.get_turn():
@@ -63,26 +67,24 @@ while janggi.get_running():
                         else:
                             print("한나라 차례입니다.")
             else:
+                print(3)
                 src_pos = src_piece.get_pos()
                 if (i - src_pos[0], j - src_pos[1]) in movable_values:
                     janggi.put_piece(src_piece, (i, j))
+                    janggi.show_board()
+                    is_piece_clicked = False
 
                     if janggi.is_enemy_checked(janggi.get_turn()):
                         if janggi.is_enemy_checkmate(janggi.get_turn()):
                             print("외통수! 게임 종료")
-                            janggi.show_board()
-                            while janggi.get_running():
-                                for event in pygame.event.get():
-                                    if event.type == QUIT:
-                                        janggi.set_running(False)
-                                        break
-                            break
+                            janggi.set_running(False)
+                            continue
                         else:
                             print("장군!")
                     janggi.set_turn_to_next()
-
-                is_piece_clicked = False
-                janggi.show_board()
+                else:
+                    janggi.show_board()
+                    is_piece_clicked = False
 
             # 장기판 출력
             # for line in janggi.get_board():
@@ -92,8 +94,6 @@ while janggi.get_running():
             #         else:
             #             print(piece.get_piece_type(), end='  ')
             #     print()
-
-pygame.quit()
 
 # 추가 구현해야 하는 것들
 # 1. 마, 상 위치 선택 기능 추가
