@@ -48,11 +48,9 @@ while not is_clicked_quit_button:
             print("마우스 클릭 위치 -" + " i :", str(i) + ", j :", j)
 
             if not is_valid_pos:
-                print(1)
                 is_piece_clicked = False
                 janggi.show_board()
             elif not is_piece_clicked:
-                print(2)
                 src_piece = janggi.get_piece_from_board((i, j))
                 if isinstance(src_piece, Piece):
                     if src_piece.get_team_type() == janggi.get_turn():
@@ -67,21 +65,20 @@ while not is_clicked_quit_button:
                         else:
                             print("한나라 차례입니다.")
             else:
-                print(3)
                 src_pos = src_piece.get_pos()
                 if (i - src_pos[0], j - src_pos[1]) in movable_values:
                     janggi.put_piece(src_piece, (i, j))
                     janggi.show_board()
                     is_piece_clicked = False
-
-                    if janggi.is_enemy_checked(janggi.get_turn()):
-                        if janggi.is_enemy_checkmate(janggi.get_turn()):
-                            print("외통수! 게임 종료")
-                            janggi.set_running(False)
-                            continue
-                        else:
-                            print("장군!")
                     janggi.set_turn_to_next()
+
+                    is_game_over = janggi.is_game_over()
+                    if is_game_over == 2:
+                        print("외통수! 게임 종료")
+                        janggi.set_running(False)
+                        continue
+                    elif is_game_over == 1:
+                        print("장군!")
                 else:
                     janggi.show_board()
                     is_piece_clicked = False

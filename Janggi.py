@@ -1,7 +1,6 @@
-import pygame
+import pygame, copy
 from janggi_const import *
 from pygame.locals import Rect
-
 
 class Piece:
     def __init__(self, piece_type: str, team_type: int, pos: tuple[int, int], img_path: str):
@@ -66,14 +65,14 @@ class Team:
 
     def _init_pieces(self):
         if self._team_type == RED_TEAM:
-            # for i in range(5):
-            #     self._pieces.append(Piece(PAWN, RED_TEAM, (2 * i, 3), RED_PAWN_IMG_PATH))
-            # for i in range(2):
-            #     self._pieces.append(Piece(ROOK, RED_TEAM, (i * 8, 0), RED_ROOK_IMG_PATH))
-            #     self._pieces.append(Piece(CANNON, RED_TEAM, (i * 6 + 1, 2), RED_CANNON_IMG_PATH))
-            #     self._pieces.append(Piece(KNIGHT, RED_TEAM, (i * 6 + 1, 0), RED_KNIGHT_IMG_PATH))
-            #     self._pieces.append(Piece(ELEPHANT, RED_TEAM, (i * 4 + 2, 0), RED_ELEPHANT_IMG_PATH))
-            #     self._pieces.append(Piece(GUARD, RED_TEAM, (i * 2 + 3, 0), RED_GUARD_IMG_PATH))
+            for i in range(5):
+                self._pieces.append(Piece(PAWN, RED_TEAM, (2 * i, 3), RED_PAWN_IMG_PATH))
+            for i in range(2):
+                self._pieces.append(Piece(ROOK, RED_TEAM, (i * 8, 0), RED_ROOK_IMG_PATH))
+                self._pieces.append(Piece(CANNON, RED_TEAM, (i * 6 + 1, 2), RED_CANNON_IMG_PATH))
+                self._pieces.append(Piece(KNIGHT, RED_TEAM, (i * 6 + 1, 0), RED_KNIGHT_IMG_PATH))
+                self._pieces.append(Piece(ELEPHANT, RED_TEAM, (i * 4 + 2, 0), RED_ELEPHANT_IMG_PATH))
+                self._pieces.append(Piece(GUARD, RED_TEAM, (i * 2 + 3, 0), RED_GUARD_IMG_PATH))
             self._pieces.append(Piece(KING, RED_TEAM, (4, 1), RED_KING_IMG_PATH))
         else:
             for i in range(5):
@@ -89,6 +88,13 @@ class Team:
     def get_pieces(self) -> list[Piece]:
         return self._pieces
 
+    def get_alive_pieces(self) -> list[Piece]:
+        alive_pieces = []
+        for piece in self._pieces:
+            if piece.get_alive():
+                alive_pieces.append(piece)
+        return alive_pieces
+
     def get_total_piece_score(self):
         total_piece_score = 0
         for piece in self._pieces:
@@ -99,7 +105,6 @@ class Team:
 
     def get_king_piece(self) -> Piece:
         return self._pieces[-1]
-
 
 class Game:
     def __init__(self):
@@ -115,15 +120,13 @@ class Game:
     def _init_board(self):
         self._board = [[0] * 9 for _ in range(10)]
 
-        for piece in self._red_team.get_pieces():
-            if piece.get_alive():
-                i, j = piece.get_pos()
-                self._board[j][i] = piece
+        for piece in self._red_team.get_alive_pieces():
+            i, j = piece.get_pos()
+            self._board[j][i] = piece
 
-        for piece in self._blue_team.get_pieces():
-            if piece.get_alive():
-                i, j = piece.get_pos()
-                self._board[j][i] = piece
+        for piece in self._blue_team.get_alive_pieces():
+            i, j = piece.get_pos()
+            self._board[j][i] = piece
 
     def is_possible_king_and_guard_move(self, src_piece: Piece, move_value: tuple[int, int]) -> bool:
         if not ((abs(move_value[0]) == 0 or abs(move_value[0]) == 1) and
@@ -441,42 +444,47 @@ class Game:
             else:
                 return False
 
-    def is_enemy_checked(self, ally_team_type: int) -> bool:
+    def is_checked(self, ally_team_type: int) -> bool:
         # 적이 장군 상태인지 검사
-        ally_pieces = self.get_team(ally_team_type).get_pieces()
+        ally_king_piece = self.get_team(ally_team_type).get_king_piece()
         enemy_team_type = ally_team_type % 2 + 1
-        enemy_king_piece = self.get_team(enemy_team_type).get_king_piece()
+        enemy_pieces = self.get_team(enemy_team_type).get_alive_pieces()
 
-        for piece in ally_pieces:
-            if piece.get_alive():
-                is_possible_to_attack = self.is_possible_to_attack(piece, enemy_king_piece)
-                if is_possible_to_attack:
-                    return True
+        for piece in enemy_pieces:
+            is_possible_to_attack = self.is_possible_to_attack(piece, ally_king_piece)
+            if is_possible_to_attack:
+                return True
 
         return False
 
-    def is_enemy_checkmate(self, ally_team_type: int) -> bool:
-        # 적이 외통수 상태인지 검사
-        enemy_team_type = ally_team_type % 2 + 1
-        enemy_pieces = self.get_team(enemy_team_type).get_pieces()
+    def is_checkmate(self, ally_team_type: int) -> bool:
+        ally_pieces = self.get_team(ally_team_type).get_alive_pieces()
 
-        for piece in enemy_pieces:
-            if piece.get_alive():
-                movable_pos_list = self.calc_movable_values(piece)
-                if movable_pos_list:
-                    return False
+        for piece in ally_pieces:
+            movable_pos_list = self.calc_movable_values(piece)
+            if movable_pos_list:
+                return False
 
         return True
+
+    def is_game_over(self) -> int:
+        if self.is_checked(self._turn):
+            if self.is_checkmate(self._turn):
+                return 2
+            else:
+                return 1
+
+        return 0
 
     def is_legal_move(self, src_piece: Piece, move_value: tuple[int, int]):
         # 수를 놓았을 때 자신이 장군 상태가 된다면 그 수는 불법(?)적인 수
         src_pos = src_piece.get_pos()
         dst_pos = (src_pos[0] + move_value[0], src_pos[1] + move_value[1])
         dst_piece = self._board[dst_pos[1]][dst_pos[0]]
-        enemy_team_type = src_piece.get_team_type() % 2 + 1
+        ally_team_type = src_piece.get_team_type()
 
         self.put_piece(src_piece, dst_pos)
-        is_ally_checked = self.is_enemy_checked(enemy_team_type)
+        is_ally_checked = self.is_checked(ally_team_type)
         self.restore_put_piece(src_piece, dst_piece, src_pos)
 
         if is_ally_checked:
@@ -682,83 +690,11 @@ class Game:
 
         self._init_board()
 
-    def max(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, int, int]:
-        if depth >= 4:
-            return (self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, 0, 0)
-
-        ally_turn = RED_TEAM
-        enemy_turn = BLUE_TEAM
-        if self.is_enemy_checkmate(enemy_turn):
-            return (-999, None, 0, 0)
-
-        max_performance_value = -99999
-        for piece in self.get_team(ally_turn).get_pieces():
-            if piece.get_alive():
-                for i, j in self.calc_movable_values(piece):
-                    src_pos = piece.get_pos()
-                    dst_pos = (i + src_pos[0], j + src_pos[1])
-                    dst_piece = self._board[dst_pos[1]][dst_pos[0]]
-                    self.put_piece(piece, dst_pos)
-                    performance_value, _, _, _ = self.min(depth + 1, alpha, beta)
-                    if performance_value > max_performance_value:
-                        max_performance_value = performance_value
-                        max_piece = piece
-                        max_i, max_j = i, j
-                    self.restore_put_piece(piece, dst_piece, src_pos)
-
-                    max_pos = max_piece.get_pos()
-                    if max_performance_value >= beta:
-                        return (max_performance_value, max_piece, max_i + max_pos[0], max_j + max_pos[1])
-
-                    if max_performance_value > alpha:
-                        alpha = max_performance_value
-
-        max_pos = max_piece.get_pos()
-        return (max_performance_value, max_piece, max_i + max_pos[0], max_j + max_pos[1])
-
-    def min(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, int, int]:
-        if depth >= 4:
-            # 인공지능 팀이 바뀌면 수정해야 됨
-            return (self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, 0, 0)
-
-        ally_turn = BLUE_TEAM
-        enemy_turn = RED_TEAM
-        if self.is_enemy_checkmate(enemy_turn):
-            return (999, None, 0, 0)
-
-        min_performance_value = 99999
-        for piece in self.get_team(ally_turn).get_pieces():
-            if piece.get_alive():
-                for i, j in self.calc_movable_values(piece):
-                    src_pos = piece.get_pos()
-                    dst_pos = (i + src_pos[0], j + src_pos[1])
-                    dst_piece = self._board[dst_pos[1]][dst_pos[0]]
-                    self.put_piece(piece, dst_pos)
-                    performance_value, _, _, _ = self.max(depth + 1, alpha, beta)
-                    if performance_value < min_performance_value:
-                        min_performance_value = performance_value
-                        min_piece = piece
-                        min_i, min_j = i, j
-                    self.restore_put_piece(piece, dst_piece, src_pos)
-
-                    min_pos = min_piece.get_pos()
-                    if min_performance_value <= alpha:
-                        return (min_performance_value, min_piece, min_i + min_pos[0], min_j + min_pos[1])
-
-                    if min_performance_value < beta:
-                        beta = min_performance_value
-
-        min_pos = min_piece.get_pos()
-        return (min_performance_value, min_piece, min_i + min_pos[0], min_j + min_pos[1])
-
     def get_piece_from_board(self, pos: tuple[int, int]):
         return self._board[pos[1]][pos[0]]
 
     def get_turn(self) -> str:
         return self._turn
-
-    def get_next_turn(self) -> str:
-        return self._turn % 2 + 1
 
     def set_turn_to_next(self):
         self._turn = self._turn % 2 + 1
@@ -813,12 +749,10 @@ class Game:
                          [(CELL_WIDTH * 5 + WHITE_SPACE_WIDTH) * MAGNIFICATION_RATIO,
                           (JANGGI_BOARD_HEIGHT - (CELL_HEIGHT * 2 + WHITE_SPACE_HEIGHT)) * MAGNIFICATION_RATIO], 1)
 
-        for piece in self._red_team.get_pieces():
-            if piece.get_alive():
-                self.draw_piece(piece)
-        for piece in self._blue_team.get_pieces():
-            if piece.get_alive():
-                self.draw_piece(piece)
+        for piece in self._red_team.get_alive_pieces():
+            self.draw_piece(piece)
+        for piece in self._blue_team.get_alive_pieces():
+            self.draw_piece(piece)
 
         pygame.display.update()
 
@@ -854,6 +788,112 @@ class Game:
         self._Surface.blit(img, ((i * CELL_WIDTH + WHITE_SPACE_WIDTH) * MAGNIFICATION_RATIO - w / 2,
                                  (j * CELL_HEIGHT + WHITE_SPACE_HEIGHT) * MAGNIFICATION_RATIO - h / 2))
 
+    def get_mcts_pick(self) -> tuple[int, Piece, tuple[int, int]]:
+        ai_turn = self.get_turn()
+        child_actions = []
+        pieces = self.get_team(ai_turn).get_alive_pieces()
+        for piece in pieces:
+            movable_values = self.calc_movable_values(piece)
+            child_actions.append(movable_values)
+
+        result_dst_positions = [0 for _ in range(len(pieces))]
+        winning_rates = [-1 for _ in range(len(pieces))]
+        for i, src_piece in enumerate(pieces):
+            movable_values = child_actions[i]
+            for movable_value in movable_values:
+                copy_game = copy.deepcopy(self)
+                src_pos = piece.get_pos()
+                dst_pos = (src_pos[0] + movable_value[0], src_pos[1] + movable_value[1])
+                copy_game.put_piece(src_piece, dst_pos)
+
+                winning_rate, k = 0, 100
+                for _ in range(k):
+                    winning_rate += simulation(copy_game)
+
+                if winning_rates[i] < winning_rate:
+                    winning_rates[i] = winning_rate
+                    result_dst_positions[i] = dst_pos
+
+                del copy_game
+
+        max_winning_rate = -1
+        for i in range(len(pieces)):
+            if max_winning_rate < winning_rates[i]:
+                max_winning_rate = winning_rates[i]
+                result_piece = pieces[i]
+                result_dst_pos = result_dst_positions[i]
+
+        return max_winning_rate, result_piece, result_dst_pos
+
+
+    # max, min 함수
+    def max(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
+        if depth >= 3:
+            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, (0, 0)
+
+        ally_turn = RED_TEAM
+        if self.is_checkmate(ally_turn):
+            return -999, None, (0, 0)
+
+        max_performance_value = -99999
+        for piece in self.get_team(ally_turn).get_pieces():
+            if piece.get_alive():
+                for i, j in self.calc_movable_values(piece):
+                    src_pos = piece.get_pos()
+                    dst_pos = (i + src_pos[0], j + src_pos[1])
+                    dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+                    self.put_piece(piece, dst_pos)
+                    performance_value, _, _ = self.min(depth + 1, alpha, beta)
+                    if performance_value > max_performance_value:
+                        max_performance_value = performance_value
+                        max_piece = piece
+                        max_i, max_j = i, j
+                    self.restore_put_piece(piece, dst_piece, src_pos)
+
+                    max_pos = max_piece.get_pos()
+                    if max_performance_value >= beta:
+                        return max_performance_value, max_piece, (max_i + max_pos[0], max_j + max_pos[1])
+
+                    if max_performance_value > alpha:
+                        alpha = max_performance_value
+
+        max_pos = max_piece.get_pos()
+        return max_performance_value, max_piece, (max_i + max_pos[0], max_j + max_pos[1])
+
+    def min(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
+        if depth >= 3:
+            # 인공지능 팀이 바뀌면 수정해야 됨
+            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, (0, 0)
+
+        ally_turn = BLUE_TEAM
+        if self.is_checkmate(ally_turn):
+            return 999, None, (0, 0)
+
+        min_performance_value = 99999
+        for piece in self.get_team(ally_turn).get_pieces():
+            if piece.get_alive():
+                for i, j in self.calc_movable_values(piece):
+                    src_pos = piece.get_pos()
+                    dst_pos = (i + src_pos[0], j + src_pos[1])
+                    dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+                    self.put_piece(piece, dst_pos)
+                    performance_value, _, _ = self.max(depth + 1, alpha, beta)
+                    if performance_value < min_performance_value:
+                        min_performance_value = performance_value
+                        min_piece = piece
+                        min_i, min_j = i, j
+                    self.restore_put_piece(piece, dst_piece, src_pos)
+
+                    min_pos = min_piece.get_pos()
+                    if min_performance_value <= alpha:
+                        return min_performance_value, min_piece, (min_i + min_pos[0], min_j + min_pos[1])
+
+                    if min_performance_value < beta:
+                        beta = min_performance_value
+
+        min_pos = min_piece.get_pos()
+        return min_performance_value, min_piece, (min_i + min_pos[0], min_j + min_pos[1])
+
 
 def is_pos_in_fortress(pos: tuple[int, int]) -> bool:
     # pos가 궁성 안에 있는지 검사
@@ -869,6 +909,10 @@ def is_pos_in_board(pos: tuple[int, int]) -> bool:
         return False
     else:
         return True
+
+
+# def simulation(game: Game):
+
 
 # 추가 구현해야 할 점
 # 1. 함수 맹글링
