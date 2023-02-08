@@ -111,7 +111,8 @@ class Game:
         self._red_team = Team(RED_TEAM)
         self._blue_team = Team(BLUE_TEAM)
         self._init_board()
-        self._turn = BLUE_TEAM
+        self._player_turn = BLUE_TEAM
+        self._step = 0
         self._running = True
         self._Surface = pygame.display.set_mode((JANGGI_BOARD_WIDTH * MAGNIFICATION_RATIO,
                                                  JANGGI_BOARD_HEIGHT * MAGNIFICATION_RATIO))
@@ -468,13 +469,14 @@ class Game:
         return True
 
     def is_game_over(self) -> int:
-        if self.is_checked(self._turn):
-            if self.is_checkmate(self._turn):
-                return 2
-            else:
-                return 1
-
-        return 0
+        if not self.get_team(self._player_turn).get_king_piece().get_alive():
+            return 2
+        if self._step >= 200:
+            return 1
+        if self.is_checked(self._player_turn):
+            if self.is_checkmate(self._player_turn):
+                return 0
+        return -1
 
     def is_legal_move(self, src_piece: Piece, move_value: tuple[int, int]):
         # 수를 놓았을 때 자신이 장군 상태가 된다면 그 수는 불법(?)적인 수
@@ -680,6 +682,7 @@ class Game:
         if isinstance(dst_piece, Piece):
             dst_piece.set_alive(False)
 
+        self._step += 1
         self._init_board()
 
     def restore_put_piece(self, src_piece: Piece, dst_piece, restore_pos: tuple[int, int]):
@@ -688,16 +691,23 @@ class Game:
         if isinstance(dst_piece, Piece):
             dst_piece.set_alive(True)
 
+        self._step += -1
         self._init_board()
 
     def get_piece_from_board(self, pos: tuple[int, int]):
         return self._board[pos[1]][pos[0]]
 
-    def get_turn(self) -> str:
-        return self._turn
+    def get_player_turn(self) -> str:
+        return self._player_turn
 
-    def set_turn_to_next(self):
-        self._turn = self._turn % 2 + 1
+    def set_player_turn_to_next(self):
+        self._player_turn = self._player_turn % 2 + 1
+
+    def get_step(self) -> int:
+        return self._step
+
+    def set_step_to_next(self):
+        self._step += 1
 
     def get_team(self, team_type: int) -> Team:
         return self._red_team if team_type == RED_TEAM else self._blue_team
@@ -791,13 +801,13 @@ class Game:
     # max, min 함수
     def max(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
         ally_turn = RED_TEAM
-        if self.is_checkmate(ally_turn):
-            return -999, None, None
+        enemy_turn = BLUE_TEAM
+        if self.is_checked(ally_turn) and self.is_checkmate(ally_turn):
+            return -999, None, (0, 0)
+        if depth >= 2:
+            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, (0, 0)
 
-        if depth >= 6:
-            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, None
-
-        max_performance_value = -99999
+        max_performance_value = -9999
         for piece in self.get_team(ally_turn).get_alive_pieces():
             for i, j in self.calc_movable_values(piece):
                 src_pos = piece.get_pos()
@@ -805,6 +815,10 @@ class Game:
                 dst_piece = self._board[dst_pos[1]][dst_pos[0]]
                 self.put_piece(piece, dst_pos)
                 performance_value, _, _ = self.min(depth + 1, alpha, beta)
+                if self.is_checked(enemy_turn):
+                    performance_value += 0.005
+                if isinstance(dst_piece, Piece):
+                    performance_value += 0.01
                 if performance_value > max_performance_value:
                     max_performance_value = performance_value
                     max_piece = piece
@@ -817,18 +831,20 @@ class Game:
                 if max_performance_value > alpha:
                     alpha = max_performance_value
 
+        if max_performance_value == -9999:
+            max_piece = None
+            max_dst_pos = None
         return max_performance_value, max_piece, max_dst_pos
 
     def min(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
         ally_turn = BLUE_TEAM
-        if self.is_checkmate(ally_turn):
-            return 999, None, None
+        enemy_turn = RED_TEAM
+        if self.is_checked(ally_turn) and self.is_checkmate(ally_turn):
+            return 999, None, (0, 0)
+        if depth >= 2:
+            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, (0, 0)
 
-        if depth >= 6:
-            # 인공지능 팀이 바뀌면 수정해야 됨
-            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, None
-
-        min_performance_value = 99999
+        min_performance_value = 9999
         for piece in self.get_team(ally_turn).get_alive_pieces():
             for i, j in self.calc_movable_values(piece):
                 src_pos = piece.get_pos()
@@ -836,6 +852,10 @@ class Game:
                 dst_piece = self._board[dst_pos[1]][dst_pos[0]]
                 self.put_piece(piece, dst_pos)
                 performance_value, _, _ = self.max(depth + 1, alpha, beta)
+                if self.is_checked(enemy_turn):
+                    performance_value -= 0.005
+                if isinstance(dst_piece, Piece):
+                    performance_value -= 0.01
                 if performance_value < min_performance_value:
                     min_performance_value = performance_value
                     min_piece = piece
@@ -848,6 +868,9 @@ class Game:
                 if min_performance_value < beta:
                     beta = min_performance_value
 
+        if min_performance_value == 9999:
+            min_piece = None
+            min_dst_pos = None
         return min_performance_value, min_piece, min_dst_pos
 
     def get_mcts_pick(self) -> tuple[int, Piece, tuple[int, int]]:
@@ -878,13 +901,15 @@ class Game:
 
                 del copy_game
 
+        if winning_rates == [-1 for _ in range(len(pieces))]:
+            return -1, None, None
+
         max_winning_rate = -1
         for i in range(len(pieces)):
             if max_winning_rate < winning_rates[i]:
                 max_winning_rate = winning_rates[i]
                 result_piece = pieces[i]
                 result_dst_pos = result_dst_positions[i]
-
         return max_winning_rate, result_piece, result_dst_pos
 
 

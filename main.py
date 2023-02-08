@@ -71,14 +71,17 @@ while not is_clicked_quit_button:
                     janggi.show_board()
                     is_piece_clicked = False
                     janggi.set_turn_to_next()
+                    print(janggi.get_step(), "수째 진행 중")
 
                     is_game_over = janggi.is_game_over()
-                    if is_game_over == 2:
+                    if is_game_over == 1:
+                        print("200수 도달! 게임 종료")
+                        janggi.set_running(False)
+                        continue
+                    elif is_game_over == 0:
                         print("외통수! 게임 종료")
                         janggi.set_running(False)
                         continue
-                    elif is_game_over == 1:
-                        print("장군!")
                 else:
                     janggi.show_board()
                     is_piece_clicked = False
