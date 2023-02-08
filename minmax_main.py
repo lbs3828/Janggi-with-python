@@ -89,25 +89,26 @@ while not is_clicked_quit_button:
                     else:
                         janggi.show_board()
         else:
-            print("AI 계산중")
-            performance_value, ai_selected_piece, ai_dst_pos = janggi.max(0, -200, 200)
-            ai_dst_i = ai_dst_pos[0]
-            ai_dst_j = ai_dst_pos[1]
-            print("AI 계산 완료")
-            print("AI performance_value :", str(performance_value) + ", src_piece :",
-                  str(ai_selected_piece.get_piece_type()) + ", i :", str(ai_dst_i) + ", j :", ai_dst_j)
-            janggi.put_piece(ai_selected_piece, ai_dst_pos)
-            janggi.set_turn_to_next()
-            janggi.show_board()
-            janggi.show_ai_move_pos(ai_dst_pos)
+            if janggi.get_running():
+                print("AI 계산중")
+                performance_value, ai_selected_piece, ai_dst_pos = janggi.max(0, -200, 200)
+                ai_dst_i = ai_dst_pos[0]
+                ai_dst_j = ai_dst_pos[1]
+                print("AI 계산 완료")
+                print("AI performance_value :", str(performance_value) + ", src_piece :",
+                      str(ai_selected_piece.get_piece_type()) + ", i :", str(ai_dst_i) + ", j :", ai_dst_j)
+                janggi.put_piece(ai_selected_piece, ai_dst_pos)
+                janggi.set_turn_to_next()
+                janggi.show_board()
+                janggi.show_ai_move_pos(ai_dst_pos)
 
-            is_game_over = janggi.is_game_over()
-            if is_game_over == 2:
-                print("외통수! 게임 종료")
-                janggi.set_running(False)
-                continue
-            elif is_game_over == 1:
-                print("장군!")
+                is_game_over = janggi.is_game_over()
+                if is_game_over == 2:
+                    print("외통수! 게임 종료")
+                    janggi.set_running(False)
+                    continue
+                elif is_game_over == 1:
+                    print("장군!")
 
             # 장기판 출력
             # for line in janggi.get_board():

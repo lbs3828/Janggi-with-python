@@ -1,4 +1,4 @@
-import pygame, copy
+import pygame, copy, random
 from janggi_const import *
 from pygame.locals import Rect
 
@@ -788,6 +788,68 @@ class Game:
         self._Surface.blit(img, ((i * CELL_WIDTH + WHITE_SPACE_WIDTH) * MAGNIFICATION_RATIO - w / 2,
                                  (j * CELL_HEIGHT + WHITE_SPACE_HEIGHT) * MAGNIFICATION_RATIO - h / 2))
 
+    # max, min 함수
+    def max(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
+        ally_turn = RED_TEAM
+        if self.is_checkmate(ally_turn):
+            return -999, None, None
+
+        if depth >= 6:
+            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, None
+
+        max_performance_value = -99999
+        for piece in self.get_team(ally_turn).get_alive_pieces():
+            for i, j in self.calc_movable_values(piece):
+                src_pos = piece.get_pos()
+                dst_pos = (i + src_pos[0], j + src_pos[1])
+                dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+                self.put_piece(piece, dst_pos)
+                performance_value, _, _ = self.min(depth + 1, alpha, beta)
+                if performance_value > max_performance_value:
+                    max_performance_value = performance_value
+                    max_piece = piece
+                    max_dst_pos = dst_pos
+                self.restore_put_piece(piece, dst_piece, src_pos)
+
+                if max_performance_value >= beta:
+                    return max_performance_value, max_piece, max_dst_pos
+
+                if max_performance_value > alpha:
+                    alpha = max_performance_value
+
+        return max_performance_value, max_piece, max_dst_pos
+
+    def min(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
+        ally_turn = BLUE_TEAM
+        if self.is_checkmate(ally_turn):
+            return 999, None, None
+
+        if depth >= 6:
+            # 인공지능 팀이 바뀌면 수정해야 됨
+            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, None
+
+        min_performance_value = 99999
+        for piece in self.get_team(ally_turn).get_alive_pieces():
+            for i, j in self.calc_movable_values(piece):
+                src_pos = piece.get_pos()
+                dst_pos = (i + src_pos[0], j + src_pos[1])
+                dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+                self.put_piece(piece, dst_pos)
+                performance_value, _, _ = self.max(depth + 1, alpha, beta)
+                if performance_value < min_performance_value:
+                    min_performance_value = performance_value
+                    min_piece = piece
+                    min_dst_pos = dst_pos
+                self.restore_put_piece(piece, dst_piece, src_pos)
+
+                if min_performance_value <= alpha:
+                    return min_performance_value, min_piece, min_dst_pos
+
+                if min_performance_value < beta:
+                    beta = min_performance_value
+
+        return min_performance_value, min_piece, min_dst_pos
+
     def get_mcts_pick(self) -> tuple[int, Piece, tuple[int, int]]:
         ai_turn = self.get_turn()
         child_actions = []
@@ -824,75 +886,6 @@ class Game:
                 result_dst_pos = result_dst_positions[i]
 
         return max_winning_rate, result_piece, result_dst_pos
-
-
-    # max, min 함수
-    def max(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
-        if depth >= 3:
-            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, (0, 0)
-
-        ally_turn = RED_TEAM
-        if self.is_checkmate(ally_turn):
-            return -999, None, (0, 0)
-
-        max_performance_value = -99999
-        for piece in self.get_team(ally_turn).get_pieces():
-            if piece.get_alive():
-                for i, j in self.calc_movable_values(piece):
-                    src_pos = piece.get_pos()
-                    dst_pos = (i + src_pos[0], j + src_pos[1])
-                    dst_piece = self._board[dst_pos[1]][dst_pos[0]]
-                    self.put_piece(piece, dst_pos)
-                    performance_value, _, _ = self.min(depth + 1, alpha, beta)
-                    if performance_value > max_performance_value:
-                        max_performance_value = performance_value
-                        max_piece = piece
-                        max_i, max_j = i, j
-                    self.restore_put_piece(piece, dst_piece, src_pos)
-
-                    max_pos = max_piece.get_pos()
-                    if max_performance_value >= beta:
-                        return max_performance_value, max_piece, (max_i + max_pos[0], max_j + max_pos[1])
-
-                    if max_performance_value > alpha:
-                        alpha = max_performance_value
-
-        max_pos = max_piece.get_pos()
-        return max_performance_value, max_piece, (max_i + max_pos[0], max_j + max_pos[1])
-
-    def min(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
-        if depth >= 3:
-            # 인공지능 팀이 바뀌면 수정해야 됨
-            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, (0, 0)
-
-        ally_turn = BLUE_TEAM
-        if self.is_checkmate(ally_turn):
-            return 999, None, (0, 0)
-
-        min_performance_value = 99999
-        for piece in self.get_team(ally_turn).get_pieces():
-            if piece.get_alive():
-                for i, j in self.calc_movable_values(piece):
-                    src_pos = piece.get_pos()
-                    dst_pos = (i + src_pos[0], j + src_pos[1])
-                    dst_piece = self._board[dst_pos[1]][dst_pos[0]]
-                    self.put_piece(piece, dst_pos)
-                    performance_value, _, _ = self.max(depth + 1, alpha, beta)
-                    if performance_value < min_performance_value:
-                        min_performance_value = performance_value
-                        min_piece = piece
-                        min_i, min_j = i, j
-                    self.restore_put_piece(piece, dst_piece, src_pos)
-
-                    min_pos = min_piece.get_pos()
-                    if min_performance_value <= alpha:
-                        return min_performance_value, min_piece, (min_i + min_pos[0], min_j + min_pos[1])
-
-                    if min_performance_value < beta:
-                        beta = min_performance_value
-
-        min_pos = min_piece.get_pos()
-        return min_performance_value, min_piece, (min_i + min_pos[0], min_j + min_pos[1])
 
 
 def is_pos_in_fortress(pos: tuple[int, int]) -> bool:
