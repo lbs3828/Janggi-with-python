@@ -32,10 +32,11 @@ def mouse_pos_to_board_idx(mi: int, mj: int) -> tuple[bool, int, int]:
 
 pygame.init()
 janggi = Game()
+display = Display()
 is_piece_clicked = False
 is_clicked_quit_button = False
 
-janggi.show_board()
+display.show_board(janggi)
 while not is_clicked_quit_button:
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -49,32 +50,37 @@ while not is_clicked_quit_button:
 
             if not is_valid_pos:
                 is_piece_clicked = False
-                janggi.show_board()
+                display.show_board(janggi)
             elif not is_piece_clicked:
                 src_piece = janggi.get_piece_from_board((i, j))
                 if isinstance(src_piece, Piece):
-                    if src_piece.get_team_type() == janggi.get_turn():
+                    if src_piece.get_team_type() == janggi.get_player_turn():
                         is_piece_clicked = True
                         movable_values = janggi.calc_movable_values(src_piece)
                         print("movable_pos_list :", movable_values)
-                        janggi.show_board()
-                        janggi.show_movable_pos(src_piece, movable_values)
+                        display.show_board(janggi)
+                        display.show_movable_pos(src_piece, movable_values)
                     else:
-                        if BLUE_TEAM == janggi.get_turn():
+                        if BLUE_TEAM == janggi.get_player_turn():
                             print("초나라 차례입니다.")
                         else:
                             print("한나라 차례입니다.")
             else:
                 src_pos = src_piece.get_pos()
+                is_piece_clicked = False
                 if (i - src_pos[0], j - src_pos[1]) in movable_values:
                     janggi.put_piece(src_piece, (i, j))
-                    janggi.show_board()
-                    is_piece_clicked = False
-                    janggi.set_turn_to_next()
+                    janggi.set_step_to_next()
+                    display.show_board(janggi)
+                    janggi.set_player_turn_to_next()
                     print(janggi.get_step(), "수째 진행 중")
 
                     is_game_over = janggi.is_game_over()
-                    if is_game_over == 1:
+                    if is_game_over == 2:
+                        print("왕 사망! 게임 종료")
+                        janggi.set_running(False)
+                        continue
+                    elif is_game_over == 1:
                         print("200수 도달! 게임 종료")
                         janggi.set_running(False)
                         continue
@@ -83,8 +89,7 @@ while not is_clicked_quit_button:
                         janggi.set_running(False)
                         continue
                 else:
-                    janggi.show_board()
-                    is_piece_clicked = False
+                    display.show_board(janggi)
 
             # 장기판 출력
             # for line in janggi.get_board():

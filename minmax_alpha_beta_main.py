@@ -54,7 +54,6 @@ while not is_clicked_quit_button:
 
                     if not is_valid_pos:
                         is_piece_clicked = False
-
                         display.show_board(janggi)
                         if ai_selected_piece is not None:
                             display.show_ai_move_pos(ai_dst_pos)
@@ -65,11 +64,10 @@ while not is_clicked_quit_button:
                                 is_piece_clicked = True
                                 movable_values = janggi.calc_movable_values(src_piece)
                                 print("movable_pos_list :", movable_values)
-
                                 display.show_board(janggi)
+                                display.show_movable_pos(src_piece, movable_values)
                                 if ai_selected_piece is not None:
                                     display.show_ai_move_pos(ai_dst_pos)
-                                display.show_movable_pos(src_piece, movable_values)
                             else:
                                 if BLUE_TEAM == janggi.get_player_turn():
                                     print("초나라 차례입니다.")
@@ -81,11 +79,8 @@ while not is_clicked_quit_button:
                         if (i - src_pos[0], j - src_pos[1]) in movable_values:
                             janggi.put_piece(src_piece, (i, j))
                             janggi.set_step_to_next()
-                            janggi.set_player_turn_to_next()
-                            ai_selected_piece = None
-
                             display.show_board(janggi)
-
+                            janggi.set_player_turn_to_next()
                             print(janggi.get_step(), "수째 진행 중")
 
                             is_game_over = janggi.is_game_over()
@@ -106,8 +101,8 @@ while not is_clicked_quit_button:
                             if ai_selected_piece is not None:
                                 display.show_ai_move_pos(ai_dst_pos)
             else:
-                print("mcts 계산중")
-                winning_rate, ai_selected_piece, ai_dst_pos = janggi.get_mcts_pick()
+                print("minmax 계산중")
+                performance_value, ai_selected_piece, ai_dst_pos = janggi.max_alpha_beta(0, -200, 200)
 
                 if ai_selected_piece is None:
                     print("한수쉼!")
@@ -118,14 +113,15 @@ while not is_clicked_quit_button:
 
                 ai_dst_i = ai_dst_pos[0]
                 ai_dst_j = ai_dst_pos[1]
-                print("mcts 계산 완료")
-                print("승률 :", winning_rate)
-                print("src_piece :", str(ai_selected_piece.get_piece_type()) + ", i :", str(ai_dst_i) + ", j :", ai_dst_j)
+                print("minmax 계산 완료")
+                print("minmax performance_value :", str(performance_value) + ", src_piece :",
+                      str(ai_selected_piece.get_piece_type()) + ", i :", str(ai_dst_i) + ", j :", ai_dst_j)
                 janggi.put_piece(ai_selected_piece, ai_dst_pos)
                 janggi.set_step_to_next()
-                janggi.set_player_turn_to_next()
-
                 print(janggi.get_step(), "수째 진행 중")
+                janggi.set_player_turn_to_next()
+                display.show_board(janggi)
+                display.show_ai_move_pos(ai_dst_pos)
 
                 is_game_over = janggi.is_game_over()
                 if is_game_over == 2:

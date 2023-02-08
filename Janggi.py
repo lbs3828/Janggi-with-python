@@ -2,8 +2,9 @@ import pygame, copy, random
 from janggi_const import *
 from pygame.locals import Rect
 
+
 class Piece:
-    def __init__(self, piece_type: str, team_type: int, pos: tuple[int, int], img_path: str):
+    def __init__(self, piece_type: str, team_type: int, pos: tuple[int, int]):
         self._piece_type = piece_type
         self._team_type = team_type
         self._pos = pos
@@ -22,16 +23,6 @@ class Piece:
         else:
             self._score = 2
 
-        if piece_type == KING:
-            piece_size = JANGGI_KING_PIECE_SIZE
-        elif piece_type == GUARD or piece_type == PAWN:
-            piece_size = JANGGI_SMALL_PIECE_SIZE
-        else:
-            piece_size = JANGGI_BIG_PIECE_SIZE
-
-        self._img = pygame.transform.scale(pygame.image.load(img_path), (piece_size * MAGNIFICATION_RATIO,
-                                                                         piece_size * MAGNIFICATION_RATIO))
-
     def get_piece_type(self) -> str:
         return self._piece_type
 
@@ -43,9 +34,6 @@ class Piece:
 
     def set_pos(self, pos: tuple[int, int]):
         self._pos = pos
-
-    def get_img(self) -> pygame.Surface:
-        return self._img
 
     def get_alive(self) -> bool:
         return self._alive
@@ -66,24 +54,24 @@ class Team:
     def _init_pieces(self):
         if self._team_type == RED_TEAM:
             for i in range(5):
-                self._pieces.append(Piece(PAWN, RED_TEAM, (2 * i, 3), RED_PAWN_IMG_PATH))
+                self._pieces.append(Piece(PAWN, RED_TEAM, (2 * i, 3)))
             for i in range(2):
-                self._pieces.append(Piece(ROOK, RED_TEAM, (i * 8, 0), RED_ROOK_IMG_PATH))
-                self._pieces.append(Piece(CANNON, RED_TEAM, (i * 6 + 1, 2), RED_CANNON_IMG_PATH))
-                self._pieces.append(Piece(KNIGHT, RED_TEAM, (i * 6 + 1, 0), RED_KNIGHT_IMG_PATH))
-                self._pieces.append(Piece(ELEPHANT, RED_TEAM, (i * 4 + 2, 0), RED_ELEPHANT_IMG_PATH))
-                self._pieces.append(Piece(GUARD, RED_TEAM, (i * 2 + 3, 0), RED_GUARD_IMG_PATH))
-            self._pieces.append(Piece(KING, RED_TEAM, (4, 1), RED_KING_IMG_PATH))
+                self._pieces.append(Piece(ROOK, RED_TEAM, (i * 8, 0)))
+                self._pieces.append(Piece(CANNON, RED_TEAM, (i * 6 + 1, 2)))
+                self._pieces.append(Piece(KNIGHT, RED_TEAM, (i * 6 + 1, 0)))
+                self._pieces.append(Piece(ELEPHANT, RED_TEAM, (i * 4 + 2, 0)))
+                self._pieces.append(Piece(GUARD, RED_TEAM, (i * 2 + 3, 0)))
+            self._pieces.append(Piece(KING, RED_TEAM, (4, 1)))
         else:
             for i in range(5):
-                self._pieces.append(Piece(PAWN, BLUE_TEAM, (2 * i, 6), BLUE_PAWN_IMG_PATH))
+                self._pieces.append(Piece(PAWN, BLUE_TEAM, (2 * i, 6)))
             for i in range(2):
-                self._pieces.append(Piece(ROOK, BLUE_TEAM, (i * 8, 9), BLUE_ROOK_IMG_PATH))
-                self._pieces.append(Piece(CANNON, BLUE_TEAM, (i * 6 + 1, 7), BLUE_CANNON_IMG_PATH))
-                self._pieces.append(Piece(KNIGHT, BLUE_TEAM, (i * 5 + 1, 9), BLUE_KNIGHT_IMG_PATH))
-                self._pieces.append(Piece(ELEPHANT, BLUE_TEAM, (i * 5 + 2, 9), BLUE_ELEPHANT_IMG_PATH))
-                self._pieces.append(Piece(GUARD, BLUE_TEAM, (i * 2 + 3, 9), BLUE_GUARD_IMG_PATH))
-            self._pieces.append(Piece(KING, BLUE_TEAM, (4, 8), BLUE_KING_IMG_PATH))
+                self._pieces.append(Piece(ROOK, BLUE_TEAM, (i * 8, 9)))
+                self._pieces.append(Piece(CANNON, BLUE_TEAM, (i * 6 + 1, 7)))
+                self._pieces.append(Piece(KNIGHT, BLUE_TEAM, (i * 5 + 1, 9)))
+                self._pieces.append(Piece(ELEPHANT, BLUE_TEAM, (i * 5 + 2, 9)))
+                self._pieces.append(Piece(GUARD, BLUE_TEAM, (i * 2 + 3, 9)))
+            self._pieces.append(Piece(KING, BLUE_TEAM, (4, 8)))
 
     def get_pieces(self) -> list[Piece]:
         return self._pieces
@@ -95,7 +83,7 @@ class Team:
                 alive_pieces.append(piece)
         return alive_pieces
 
-    def get_total_piece_score(self):
+    def get_total_alive_piece_score(self):
         total_piece_score = 0
         for piece in self._pieces:
             if piece.get_alive():
@@ -106,6 +94,7 @@ class Team:
     def get_king_piece(self) -> Piece:
         return self._pieces[-1]
 
+
 class Game:
     def __init__(self):
         self._red_team = Team(RED_TEAM)
@@ -114,9 +103,6 @@ class Game:
         self._player_turn = BLUE_TEAM
         self._step = 0
         self._running = True
-        self._Surface = pygame.display.set_mode((JANGGI_BOARD_WIDTH * MAGNIFICATION_RATIO,
-                                                 JANGGI_BOARD_HEIGHT * MAGNIFICATION_RATIO))
-        print(type(self._Surface))
 
     def _init_board(self):
         self._board = [[0] * 9 for _ in range(10)]
@@ -682,7 +668,6 @@ class Game:
         if isinstance(dst_piece, Piece):
             dst_piece.set_alive(False)
 
-        self._step += 1
         self._init_board()
 
     def restore_put_piece(self, src_piece: Piece, dst_piece, restore_pos: tuple[int, int]):
@@ -691,7 +676,6 @@ class Game:
         if isinstance(dst_piece, Piece):
             dst_piece.set_alive(True)
 
-        self._step += -1
         self._init_board()
 
     def get_piece_from_board(self, pos: tuple[int, int]):
@@ -721,7 +705,276 @@ class Game:
     def set_running(self, running: bool):
         self._running = running
 
-    def show_board(self):
+    # max, min 함수
+    def max_random(self, depth: int) -> tuple[int, Piece, tuple[int, int]]:
+        ally_turn = RED_TEAM
+        enemy_turn = BLUE_TEAM
+        if self.is_checked(ally_turn) and self.is_checkmate(ally_turn):
+            return -999, None, (0, 0)
+        if depth >= 2:
+            return self._red_team.get_total_alive_piece_score() - self._blue_team.get_total_alive_piece_score(), None, (0, 0)
+
+        candidate_results = []
+        max_performance_value = -900
+        for piece in self.get_team(ally_turn).get_alive_pieces():
+            for i, j in self.calc_movable_values(piece):
+                src_pos = piece.get_pos()
+                dst_pos = (i + src_pos[0], j + src_pos[1])
+                dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+                self.put_piece(piece, dst_pos)
+                performance_value, _, _ = self.min_random(depth + 1)
+                if self.is_checked(enemy_turn):
+                    performance_value += 0.005
+                if isinstance(dst_piece, Piece):
+                    if dst_piece.get_piece_type() == KING:
+                        performance_value += 500
+                    performance_value += 0.01
+                if performance_value >= max_performance_value:
+                    if performance_value > max_performance_value:
+                        candidate_results.clear()
+                    max_performance_value = performance_value
+                    max_piece = piece
+                    max_dst_pos = dst_pos
+                    candidate_results.append((max_performance_value, max_piece, max_dst_pos))
+                self.restore_put_piece(piece, dst_piece, src_pos)
+
+        if max_performance_value == -900:
+            return -900, None, None
+
+        rand_num = random.randrange(0, len(candidate_results))
+        return candidate_results[rand_num]
+
+    def min_random(self, depth: int) -> tuple[int, Piece, tuple[int, int]]:
+        ally_turn = BLUE_TEAM
+        enemy_turn = RED_TEAM
+        if self.is_checked(ally_turn) and self.is_checkmate(ally_turn):
+            return 999, None, (0, 0)
+        if depth >= 2:
+            return self._red_team.get_total_alive_piece_score() - self._blue_team.get_total_alive_piece_score(), None, (0, 0)
+
+        candidate_results = []
+        min_performance_value = 900
+        for piece in self.get_team(ally_turn).get_alive_pieces():
+            for i, j in self.calc_movable_values(piece):
+                src_pos = piece.get_pos()
+                dst_pos = (i + src_pos[0], j + src_pos[1])
+                dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+                self.put_piece(piece, dst_pos)
+                performance_value, _, _ = self.max_random(depth + 1)
+                if self.is_checked(enemy_turn):
+                    performance_value -= 0.005
+                if isinstance(dst_piece, Piece):
+                    if dst_piece.get_piece_type() == KING:
+                        performance_value += 500
+                    performance_value -= 0.01
+                if performance_value <= min_performance_value:
+                    if performance_value < min_performance_value:
+                        candidate_results.clear()
+                    min_performance_value = performance_value
+                    min_piece = piece
+                    min_dst_pos = dst_pos
+                    candidate_results.append((min_performance_value, min_piece, min_dst_pos))
+                self.restore_put_piece(piece, dst_piece, src_pos)
+
+        if min_performance_value == 900:
+            return 900, None, None
+
+        rand_num = random.randrange(0, len(candidate_results))
+        return candidate_results[rand_num]
+
+    def max_alpha_beta(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
+        ally_turn = RED_TEAM
+        enemy_turn = BLUE_TEAM
+        if self.is_checked(ally_turn) and self.is_checkmate(ally_turn):
+            return -999, None, (0, 0)
+        if depth >= 3:
+            return self._red_team.get_total_alive_piece_score() - self._blue_team.get_total_alive_piece_score(), None, (0, 0)
+
+        max_performance_value = -900
+        for piece in self.get_team(ally_turn).get_alive_pieces():
+            for i, j in self.calc_movable_values(piece):
+                src_pos = piece.get_pos()
+                dst_pos = (i + src_pos[0], j + src_pos[1])
+                dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+                self.put_piece(piece, dst_pos)
+                performance_value, _, _ = self.min_alpha_beta(depth + 1, alpha, beta)
+                if self.is_checked(enemy_turn):
+                    performance_value += 0.005
+                if isinstance(dst_piece, Piece):
+                    if dst_piece.get_piece_type() == KING:
+                        performance_value += 500
+                    performance_value += 0.01
+                if performance_value > max_performance_value:
+                    max_performance_value = performance_value
+                    max_piece = piece
+                    max_dst_pos = dst_pos
+                self.restore_put_piece(piece, dst_piece, src_pos)
+
+                if max_performance_value >= beta:
+                    return max_performance_value, max_piece, max_dst_pos
+
+                if max_performance_value > alpha:
+                    alpha = max_performance_value
+
+        if max_performance_value == -900:
+            max_piece = None
+            max_dst_pos = None
+
+        return max_performance_value, max_piece, max_dst_pos
+
+    def min_alpha_beta(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
+        ally_turn = BLUE_TEAM
+        enemy_turn = RED_TEAM
+        if self.is_checked(ally_turn) and self.is_checkmate(ally_turn):
+            return 999, None, (0, 0)
+        if depth >= 3:
+            return self._red_team.get_total_alive_piece_score() - self._blue_team.get_total_alive_piece_score(), None, (0, 0)
+
+        min_performance_value = 900
+        for piece in self.get_team(ally_turn).get_alive_pieces():
+            for i, j in self.calc_movable_values(piece):
+                src_pos = piece.get_pos()
+                dst_pos = (i + src_pos[0], j + src_pos[1])
+                dst_piece = self._board[dst_pos[1]][dst_pos[0]]
+                self.put_piece(piece, dst_pos)
+                performance_value, _, _ = self.max_alpha_beta(depth + 1, alpha, beta)
+                if self.is_checked(enemy_turn):
+                    performance_value -= 0.005
+                if isinstance(dst_piece, Piece):
+                    if dst_piece.get_piece_type() == KING:
+                        performance_value -= 500
+                    performance_value -= 0.01
+                if performance_value < min_performance_value:
+                    min_performance_value = performance_value
+                    min_piece = piece
+                    min_dst_pos = dst_pos
+                self.restore_put_piece(piece, dst_piece, src_pos)
+
+                if min_performance_value <= alpha:
+                    return min_performance_value, min_piece, min_dst_pos
+
+                if min_performance_value < beta:
+                    beta = min_performance_value
+
+        if min_performance_value == 900:
+            min_piece = None
+            min_dst_pos = None
+
+        return min_performance_value, min_piece, min_dst_pos
+
+    def get_mcts_pick(self) -> tuple[int, Piece, tuple[int, int]]:
+        ai_turn = self.get_player_turn()
+        child_actions = []
+        pieces = self.get_team(ai_turn).get_alive_pieces()
+        for piece in pieces:
+            movable_values = self.calc_movable_values(piece)
+            child_actions.append(movable_values)
+
+        result_dst_positions = [0 for _ in range(len(pieces))]
+        winning_rates = [-1 for _ in range(len(pieces))]
+        for i, piece in enumerate(pieces):
+            movable_values = child_actions[i]
+            for movable_value in movable_values:
+                copy_game = copy.deepcopy(self)
+                copy_piece = copy_game.get_piece_from_board(piece.get_pos())
+
+                src_pos = copy_piece.get_pos()
+                dst_pos = (src_pos[0] + movable_value[0], src_pos[1] + movable_value[1])
+                copy_game.put_piece(copy_piece, dst_pos)
+                copy_game.set_player_turn_to_next()
+                copy_game.set_step_to_next()
+
+                winning_rate, k = 0, 2
+                print("시뮬레이션 시작!")
+                print("src_piece :", str(copy_piece.get_piece_type()) + ", movable_value :", movable_value,
+                      ", src_pos :", src_pos, ", dst_pos :", dst_pos)
+                for _ in range(k):
+                    winning_rate += mcts_simulation(copy_game)
+                print("시뮬레이션 종료!, winning_rate :", winning_rate)
+
+                if winning_rates[i] < winning_rate:
+                    winning_rates[i] = winning_rate
+                    result_dst_positions[i] = dst_pos
+
+                del copy_game
+
+        if winning_rates == [-1 for _ in range(len(pieces))]:
+            return -1, None, None
+        else:
+            print("winning_rates :", winning_rates)
+            print("pieces :", pieces)
+            print("result_dst_positions :", result_dst_positions)
+
+        max_rate = max(winning_rates)
+        valid_winning_rates = [rate for rate in winning_rates if rate == max_rate]
+        valid_winning_rates_idx = [i for i, rate in enumerate(winning_rates) if rate == max_rate]
+        rand_num = random.randrange(0, len(valid_winning_rates))
+        print("rand_num :", rand_num, ", valid_winning_rates_idx[rand_num] :", valid_winning_rates_idx[rand_num])
+        return valid_winning_rates[rand_num], pieces[valid_winning_rates_idx[rand_num]], result_dst_positions[valid_winning_rates_idx[rand_num]]
+
+
+class Display:
+    def __init__(self):
+        self._Surface = pygame.display.set_mode((JANGGI_BOARD_WIDTH * MAGNIFICATION_RATIO,
+                                                 JANGGI_BOARD_HEIGHT * MAGNIFICATION_RATIO))
+        self._blue_king_img = \
+            pygame.transform.scale(pygame.image.load(BLUE_KING_IMG_PATH),
+                                   (JANGGI_KING_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_KING_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._blue_rook_img = \
+            pygame.transform.scale(pygame.image.load(BLUE_ROOK_IMG_PATH),
+                                   (JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._blue_cannon_img = \
+            pygame.transform.scale(pygame.image.load(BLUE_CANNON_IMG_PATH),
+                                   (JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._blue_knight_img = \
+            pygame.transform.scale(pygame.image.load(BLUE_KNIGHT_IMG_PATH),
+                                   (JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._blue_elephant_img = \
+            pygame.transform.scale(pygame.image.load(BLUE_ELEPHANT_IMG_PATH),
+                                   (JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._blue_guard_img = \
+            pygame.transform.scale(pygame.image.load(BLUE_GUARD_IMG_PATH),
+                                   (JANGGI_SMALL_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_SMALL_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._blue_pawn_img = \
+            pygame.transform.scale(pygame.image.load(BLUE_PAWN_IMG_PATH),
+                                   (JANGGI_SMALL_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_SMALL_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._red_king_img = \
+            pygame.transform.scale(pygame.image.load(RED_KING_IMG_PATH),
+                                   (JANGGI_KING_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_KING_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._red_rook_img = \
+            pygame.transform.scale(pygame.image.load(RED_ROOK_IMG_PATH),
+                                   (JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._red_cannon_img = \
+            pygame.transform.scale(pygame.image.load(RED_CANNON_IMG_PATH),
+                                   (JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._red_knight_img = \
+            pygame.transform.scale(pygame.image.load(RED_KNIGHT_IMG_PATH),
+                                   (JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._red_elephant_img = \
+            pygame.transform.scale(pygame.image.load(RED_ELEPHANT_IMG_PATH),
+                                   (JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_BIG_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._red_guard_img = \
+            pygame.transform.scale(pygame.image.load(RED_GUARD_IMG_PATH),
+                                   (JANGGI_SMALL_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_SMALL_PIECE_SIZE * MAGNIFICATION_RATIO))
+        self._red_pawn_img = \
+            pygame.transform.scale(pygame.image.load(RED_PAWN_IMG_PATH),
+                                   (JANGGI_SMALL_PIECE_SIZE * MAGNIFICATION_RATIO,
+                                    JANGGI_SMALL_PIECE_SIZE * MAGNIFICATION_RATIO))
+
+    def show_board(self, game: Game):
         self._Surface.fill(BACKGROUND_COLOR)
 
         for x in range(9):
@@ -759,9 +1012,9 @@ class Game:
                          [(CELL_WIDTH * 5 + WHITE_SPACE_WIDTH) * MAGNIFICATION_RATIO,
                           (JANGGI_BOARD_HEIGHT - (CELL_HEIGHT * 2 + WHITE_SPACE_HEIGHT)) * MAGNIFICATION_RATIO], 1)
 
-        for piece in self._red_team.get_alive_pieces():
+        for piece in game.get_team(RED_TEAM).get_alive_pieces():
             self.draw_piece(piece)
-        for piece in self._blue_team.get_alive_pieces():
+        for piece in game.get_team(BLUE_TEAM).get_alive_pieces():
             self.draw_piece(piece)
 
         pygame.display.update()
@@ -792,126 +1045,41 @@ class Game:
         pygame.display.update()
 
     def draw_piece(self, piece: Piece):
-        img = piece.get_img()
+        if piece.get_team_type() == BLUE_TEAM:
+            if piece.get_piece_type() == KING:
+                img = self._blue_king_img
+            elif piece.get_piece_type() == ROOK:
+                img = self._blue_rook_img
+            elif piece.get_piece_type() == CANNON:
+                img = self._blue_cannon_img
+            elif piece.get_piece_type() == KNIGHT:
+                img = self._blue_knight_img
+            elif piece.get_piece_type() == ELEPHANT:
+                img = self._blue_elephant_img
+            elif piece.get_piece_type() == GUARD:
+                img = self._blue_guard_img
+            elif piece.get_piece_type() == PAWN:
+                img = self._blue_pawn_img
+        else:
+            if piece.get_piece_type() == KING:
+                img = self._red_king_img
+            elif piece.get_piece_type() == ROOK:
+                img = self._red_rook_img
+            elif piece.get_piece_type() == CANNON:
+                img = self._red_cannon_img
+            elif piece.get_piece_type() == KNIGHT:
+                img = self._red_knight_img
+            elif piece.get_piece_type() == ELEPHANT:
+                img = self._red_elephant_img
+            elif piece.get_piece_type() == GUARD:
+                img = self._red_guard_img
+            elif piece.get_piece_type() == PAWN:
+                img = self._red_pawn_img
+
         i, j = piece.get_pos()
         w, h = img.get_width(), img.get_height()
         self._Surface.blit(img, ((i * CELL_WIDTH + WHITE_SPACE_WIDTH) * MAGNIFICATION_RATIO - w / 2,
                                  (j * CELL_HEIGHT + WHITE_SPACE_HEIGHT) * MAGNIFICATION_RATIO - h / 2))
-
-    # max, min 함수
-    def max(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
-        ally_turn = RED_TEAM
-        enemy_turn = BLUE_TEAM
-        if self.is_checked(ally_turn) and self.is_checkmate(ally_turn):
-            return -999, None, (0, 0)
-        if depth >= 2:
-            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, (0, 0)
-
-        max_performance_value = -9999
-        for piece in self.get_team(ally_turn).get_alive_pieces():
-            for i, j in self.calc_movable_values(piece):
-                src_pos = piece.get_pos()
-                dst_pos = (i + src_pos[0], j + src_pos[1])
-                dst_piece = self._board[dst_pos[1]][dst_pos[0]]
-                self.put_piece(piece, dst_pos)
-                performance_value, _, _ = self.min(depth + 1, alpha, beta)
-                if self.is_checked(enemy_turn):
-                    performance_value += 0.005
-                if isinstance(dst_piece, Piece):
-                    performance_value += 0.01
-                if performance_value > max_performance_value:
-                    max_performance_value = performance_value
-                    max_piece = piece
-                    max_dst_pos = dst_pos
-                self.restore_put_piece(piece, dst_piece, src_pos)
-
-                if max_performance_value >= beta:
-                    return max_performance_value, max_piece, max_dst_pos
-
-                if max_performance_value > alpha:
-                    alpha = max_performance_value
-
-        if max_performance_value == -9999:
-            max_piece = None
-            max_dst_pos = None
-        return max_performance_value, max_piece, max_dst_pos
-
-    def min(self, depth: int, alpha: int, beta: int) -> tuple[int, Piece, tuple[int, int]]:
-        ally_turn = BLUE_TEAM
-        enemy_turn = RED_TEAM
-        if self.is_checked(ally_turn) and self.is_checkmate(ally_turn):
-            return 999, None, (0, 0)
-        if depth >= 2:
-            return self._red_team.get_total_piece_score() - self._blue_team.get_total_piece_score(), None, (0, 0)
-
-        min_performance_value = 9999
-        for piece in self.get_team(ally_turn).get_alive_pieces():
-            for i, j in self.calc_movable_values(piece):
-                src_pos = piece.get_pos()
-                dst_pos = (i + src_pos[0], j + src_pos[1])
-                dst_piece = self._board[dst_pos[1]][dst_pos[0]]
-                self.put_piece(piece, dst_pos)
-                performance_value, _, _ = self.max(depth + 1, alpha, beta)
-                if self.is_checked(enemy_turn):
-                    performance_value -= 0.005
-                if isinstance(dst_piece, Piece):
-                    performance_value -= 0.01
-                if performance_value < min_performance_value:
-                    min_performance_value = performance_value
-                    min_piece = piece
-                    min_dst_pos = dst_pos
-                self.restore_put_piece(piece, dst_piece, src_pos)
-
-                if min_performance_value <= alpha:
-                    return min_performance_value, min_piece, min_dst_pos
-
-                if min_performance_value < beta:
-                    beta = min_performance_value
-
-        if min_performance_value == 9999:
-            min_piece = None
-            min_dst_pos = None
-        return min_performance_value, min_piece, min_dst_pos
-
-    def get_mcts_pick(self) -> tuple[int, Piece, tuple[int, int]]:
-        ai_turn = self.get_turn()
-        child_actions = []
-        pieces = self.get_team(ai_turn).get_alive_pieces()
-        for piece in pieces:
-            movable_values = self.calc_movable_values(piece)
-            child_actions.append(movable_values)
-
-        result_dst_positions = [0 for _ in range(len(pieces))]
-        winning_rates = [-1 for _ in range(len(pieces))]
-        for i, src_piece in enumerate(pieces):
-            movable_values = child_actions[i]
-            for movable_value in movable_values:
-                copy_game = copy.deepcopy(self)
-                src_pos = piece.get_pos()
-                dst_pos = (src_pos[0] + movable_value[0], src_pos[1] + movable_value[1])
-                copy_game.put_piece(src_piece, dst_pos)
-
-                winning_rate, k = 0, 100
-                for _ in range(k):
-                    winning_rate += simulation(copy_game)
-
-                if winning_rates[i] < winning_rate:
-                    winning_rates[i] = winning_rate
-                    result_dst_positions[i] = dst_pos
-
-                del copy_game
-
-        if winning_rates == [-1 for _ in range(len(pieces))]:
-            return -1, None, None
-
-        max_winning_rate = -1
-        for i in range(len(pieces)):
-            if max_winning_rate < winning_rates[i]:
-                max_winning_rate = winning_rates[i]
-                result_piece = pieces[i]
-                result_dst_pos = result_dst_positions[i]
-        return max_winning_rate, result_piece, result_dst_pos
-
 
 def is_pos_in_fortress(pos: tuple[int, int]) -> bool:
     # pos가 궁성 안에 있는지 검사
@@ -929,8 +1097,78 @@ def is_pos_in_board(pos: tuple[int, int]) -> bool:
         return True
 
 
-# def simulation(game: Game):
+def mcts_simulation(game: Game) -> int:
+    ai_turn = game.get_player_turn() % 2 + 1
+    for i in range(4):
+        if game.get_player_turn() == BLUE_TEAM:
+            performance_value, ai_selected_piece, ai_dst_pos = game.min_random(0)
 
+            if ai_selected_piece is None:
+                game.set_player_turn_to_next()
+                game.set_step_to_next()
+                continue
+
+            game.put_piece(ai_selected_piece, ai_dst_pos)
+            game.set_step_to_next()
+            game.set_player_turn_to_next()
+
+            is_game_over = game.is_game_over()
+            if is_game_over == 0 or is_game_over == 2:
+                if ai_turn == BLUE_TEAM:
+                    return 1
+                else:
+                    return 0
+            elif is_game_over == 1:
+                if game.get_team(RED_TEAM).get_total_alive_piece_score() > game.get_team(BLUE_TEAM).get_total_alive_piece_score():
+                    if ai_turn == BLUE_TEAM:
+                        return 0
+                    else:
+                        return 1
+                elif game.get_team(RED_TEAM).get_total_alive_piece_score() < game.get_team(BLUE_TEAM).get_total_alive_piece_score():
+                    if ai_turn == BLUE_TEAM:
+                        return 1
+                    else:
+                        return 0
+        elif game.get_player_turn() == RED_TEAM:
+            performance_value, ai_selected_piece, ai_dst_pos = game.max_random(0)
+
+            if ai_selected_piece is None:
+                game.set_player_turn_to_next()
+                game.set_step_to_next()
+                continue
+
+            game.put_piece(ai_selected_piece, ai_dst_pos)
+            game.set_step_to_next()
+            game.set_player_turn_to_next()
+
+            is_game_over = game.is_game_over()
+            if is_game_over == 0 or is_game_over == 2:
+                if ai_turn == BLUE_TEAM:
+                    return 0
+                else:
+                    return 1
+            elif is_game_over == 1:
+                if game.get_team(RED_TEAM).get_total_alive_piece_score() > game.get_team(BLUE_TEAM).get_total_alive_piece_score():
+                    if ai_turn == BLUE_TEAM:
+                        return 0
+                    else:
+                        return 1
+                elif game.get_team(RED_TEAM).get_total_alive_piece_score() < game.get_team(BLUE_TEAM).get_total_alive_piece_score():
+                    if ai_turn == BLUE_TEAM:
+                        return 1
+                    else:
+                        return 0
+
+    if game.get_team(RED_TEAM).get_total_alive_piece_score() > game.get_team(BLUE_TEAM).get_total_alive_piece_score():
+        if ai_turn == BLUE_TEAM:
+            return 0
+        else:
+            return 1
+    elif game.get_team(RED_TEAM).get_total_alive_piece_score() < game.get_team(BLUE_TEAM).get_total_alive_piece_score():
+        if ai_turn == BLUE_TEAM:
+            return 1
+        else:
+            return 0
 
 # 추가 구현해야 할 점
 # 1. 함수 맹글링

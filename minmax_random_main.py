@@ -32,81 +32,83 @@ def mouse_pos_to_board_idx(mi: int, mj: int) -> tuple[bool, int, int]:
 
 pygame.init()
 janggi = Game()
+display = Display()
 player_turn = BLUE_TEAM
 ai_selected_piece = None
 is_piece_clicked = False
 is_clicked_quit_button = False
 
-janggi.show_board()
+display.show_board(janggi)
 while not is_clicked_quit_button:
     for event in pygame.event.get():
         if event.type == QUIT:
             is_clicked_quit_button = True
             break
 
-        if janggi.get_player_turn() == player_turn:
-            if janggi.get_running() and event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
-                mi, mj = event.pos[0] / MAGNIFICATION_RATIO, event.pos[1] / MAGNIFICATION_RATIO
-                is_valid_pos, i, j = mouse_pos_to_board_idx(mi, mj)
-                print("마우스 클릭 위치 -" + " i :", str(i) + ", j :", j)
+        if janggi.get_running():
+            if janggi.get_player_turn() == player_turn:
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
+                    mi, mj = event.pos[0] / MAGNIFICATION_RATIO, event.pos[1] / MAGNIFICATION_RATIO
+                    is_valid_pos, i, j = mouse_pos_to_board_idx(mi, mj)
+                    print("마우스 클릭 위치 -" + " i :", str(i) + ", j :", j)
 
-                if not is_valid_pos:
-                    is_piece_clicked = False
-                    janggi.show_board()
-                    if ai_selected_piece is not None:
-                        janggi.show_ai_move_pos(ai_dst_pos)
-                elif not is_piece_clicked:
-                    src_piece = janggi.get_piece_from_board((i, j))
-                    if isinstance(src_piece, Piece):
-                        if src_piece.get_team_type() == janggi.get_player_turn():
-                            is_piece_clicked = True
-                            movable_values = janggi.calc_movable_values(src_piece)
-                            print("movable_pos_list :", movable_values)
-                            janggi.show_board()
-                            janggi.show_movable_pos(src_piece, movable_values)
-                            if ai_selected_piece is not None:
-                                janggi.show_ai_move_pos(ai_dst_pos)
-                        else:
-                            if BLUE_TEAM == janggi.get_player_turn():
-                                print("초나라 차례입니다.")
-                            else:
-                                print("한나라 차례입니다.")
-                else:
-                    src_pos = src_piece.get_pos()
-                    is_piece_clicked = False
-                    if (i - src_pos[0], j - src_pos[1]) in movable_values:
-                        janggi.put_piece(src_piece, (i, j))
-                        janggi.show_board()
-                        janggi.set_player_turn_to_next()
-                        print(janggi.get_step(), "수째 진행 중")
-
-                        is_game_over = janggi.is_game_over()
-                        if is_game_over == 2:
-                            print("왕 사망! 게임 종료")
-                            janggi.set_running(False)
-                            continue
-                        elif is_game_over == 1:
-                            print("200수 도달! 게임 종료")
-                            janggi.set_running(False)
-                            continue
-                        elif is_game_over == 0:
-                            print("외통수! 게임 종료")
-                            janggi.set_running(False)
-                            continue
-                    else:
-                        janggi.show_board()
+                    if not is_valid_pos:
+                        is_piece_clicked = False
+                        display.show_board(janggi)
                         if ai_selected_piece is not None:
-                            janggi.show_ai_move_pos(ai_dst_pos)
-        else:
-            if janggi.get_running():
+                            display.show_ai_move_pos(ai_dst_pos)
+                    elif not is_piece_clicked:
+                        src_piece = janggi.get_piece_from_board((i, j))
+                        if isinstance(src_piece, Piece):
+                            if src_piece.get_team_type() == janggi.get_player_turn():
+                                is_piece_clicked = True
+                                movable_values = janggi.calc_movable_values(src_piece)
+                                print("movable_pos_list :", movable_values)
+                                display.show_board(janggi)
+                                display.show_movable_pos(src_piece, movable_values)
+                                if ai_selected_piece is not None:
+                                    display.show_ai_move_pos(ai_dst_pos)
+                            else:
+                                if BLUE_TEAM == janggi.get_player_turn():
+                                    print("초나라 차례입니다.")
+                                else:
+                                    print("한나라 차례입니다.")
+                    else:
+                        src_pos = src_piece.get_pos()
+                        is_piece_clicked = False
+                        if (i - src_pos[0], j - src_pos[1]) in movable_values:
+                            janggi.put_piece(src_piece, (i, j))
+                            janggi.set_step_to_next()
+                            display.show_board(janggi)
+                            janggi.set_player_turn_to_next()
+                            print(janggi.get_step(), "수째 진행 중")
+
+                            is_game_over = janggi.is_game_over()
+                            if is_game_over == 2:
+                                print("왕 사망! 게임 종료")
+                                janggi.set_running(False)
+                                continue
+                            elif is_game_over == 1:
+                                print("200수 도달! 게임 종료")
+                                janggi.set_running(False)
+                                continue
+                            elif is_game_over == 0:
+                                print("외통수! 게임 종료")
+                                janggi.set_running(False)
+                                continue
+                        else:
+                            display.show_board(janggi)
+                            if ai_selected_piece is not None:
+                                display.show_ai_move_pos(ai_dst_pos)
+            else:
                 print("minmax 계산중")
-                performance_value, ai_selected_piece, ai_dst_pos = janggi.max(0, -200, 200)
+                performance_value, ai_selected_piece, ai_dst_pos = janggi.max_random(0)
 
                 if ai_selected_piece is None:
                     print("한수쉼!")
                     janggi.set_player_turn_to_next()
                     janggi.set_step_to_next()
-                    janggi.show_board()
+                    display.show_board(janggi)
                     continue
 
                 ai_dst_i = ai_dst_pos[0]
@@ -115,9 +117,11 @@ while not is_clicked_quit_button:
                 print("minmax performance_value :", str(performance_value) + ", src_piece :",
                       str(ai_selected_piece.get_piece_type()) + ", i :", str(ai_dst_i) + ", j :", ai_dst_j)
                 janggi.put_piece(ai_selected_piece, ai_dst_pos)
+                janggi.set_step_to_next()
+                print(janggi.get_step(), "수째 진행 중")
                 janggi.set_player_turn_to_next()
-                janggi.show_board()
-                janggi.show_ai_move_pos(ai_dst_pos)
+                display.show_board(janggi)
+                display.show_ai_move_pos(ai_dst_pos)
 
                 is_game_over = janggi.is_game_over()
                 if is_game_over == 2:
