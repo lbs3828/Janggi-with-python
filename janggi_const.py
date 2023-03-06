@@ -14,8 +14,18 @@ BACKGROUND_COLOR = (244, 176, 93)   # 장기판 배경색
 BLACK_COLOR = (0, 0, 0)             # 검정색
 
 # 팀 타입
-BLUE_TEAM = 1   # 초나라 : 1
-RED_TEAM = 2    # 한나라 : 2
+BLUE_TEAM = 0   # 초나라 : 0
+RED_TEAM = 1    # 한나라 : 1
+
+# 장기판 세팅 타입
+BOTTOM_BLUE = 0
+BOTTOM_RED = 1
+
+# 장기 판차림 세팅 타입
+LEFT_ELEPHANT_SETTING = 0       # 왼상 차림 (귀마)
+RIGHT_ELEPHANT_SETTING = 1      # 오른상 차림 (귀마)
+INSIDE_ELEPHANT_SETTING = 2     # 안상 차림 (원앙마)
+OUTSIDE_ELEPHANT_SETTING = 3    # 바깥상 차림 (양귀마)
 
 # 장기판 확대 비율
 MAGNIFICATION_RATIO = 15    # 장기판 확대 비율
